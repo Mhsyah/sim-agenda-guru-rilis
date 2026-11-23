@@ -134,8 +134,20 @@ final class AppUpdate
                 if (($t = trim((string) config('AppUpdate')->githubToken)) !== '') {
                     $headers['Authorization'] = 'Bearer ' . $t;
                 }
-                $res  = service('curlrequest', ['timeout' => 180, 'connect_timeout' => 8, 'http_errors' => false, 'allow_redirects' => ['max' => 5]])->get($url, ['headers' => $headers]);
-                $code = $res->getStatusCode();
+                // GitHub mengalihkan zipball ke codeload.github.com (302): ikuti pengalihan secara eksplisit (hanya https)
+                $next = $url;
+                for ($hop = 0; $hop < 5; $hop++) {
+                    $res  = service('curlrequest', ['timeout' => 180, 'connect_timeout' => 8, 'http_errors' => false], null, null, false)
+                        ->get($next, ['headers' => $headers, 'allow_redirects' => false]);
+                    $code = $res->getStatusCode();
+                    $loc  = $res->getHeaderLine('Location');
+                    if ($code >= 300 && $code < 400 && str_starts_with(strtolower($loc), 'https://')) {
+                        $next = $loc;
+                        unset($headers['Authorization']); // token tidak dikirim ke alamat unduhan
+                        continue;
+                    }
+                    break;
+                }
                 $body = (string) $res->getBody();
             }
         } catch (Throwable $e) {
@@ -359,7 +371,9 @@ final class AppUpdate
             try {
                 $cmp = self::getJson($repoApi . '/compare/' . $mine . '...' . $sha, true);
                 // ahead_by = jumlah commit di GitHub yang belum ada di instalasi ini
-                $out['ahead'] = in_array($cmp['status'] ?? '', ['ahead', 'diverged'], true) ? (int) ($cmp['ahead_by'] ?? 0) : 0;
+                // Commit terpasang tidak dikenal repo rilis (mis. dari repo kode lama) → dianggap perlu diperbarui
+                $out['ahead'] = ! empty($cmp['__404']) ? 1
+                    : (in_array($cmp['status'] ?? '', ['ahead', 'diverged'], true) ? (int) ($cmp['ahead_by'] ?? 0) : 0);
             } catch (Throwable $e) {
                 $out['ahead'] = 0;
             }

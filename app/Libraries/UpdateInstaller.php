@@ -128,7 +128,9 @@ final class UpdateInstaller
                 return $fail('Paket tidak lengkap (' . $must . ' tidak ada).');
             }
         }
-        $lockNow = is_file(self::root() . '/composer.lock') ? hash_file('sha256', self::root() . '/composer.lock') : '';
+        // Paket rilis membawa folder vendor sendiri → vendor ikut diperbarui & perubahan composer.lock aman
+        $dirs    = is_file($src . '/vendor/autoload.php') ? array_merge(self::DIRS, ['vendor']) : self::DIRS;
+        $lockNow = in_array('vendor', $dirs, true) ? '' : (is_file(self::root() . '/composer.lock') ? hash_file('sha256', self::root() . '/composer.lock') : '');
         $lockNew = is_file($src . '/composer.lock') ? hash_file('sha256', $src . '/composer.lock') : '';
         if ($lockNow !== '' && $lockNew !== '' && $lockNow !== $lockNew) {
             return $fail('Dependensi (composer) berubah pada versi ini. Pasang lewat paket rilis manual agar folder vendor ikut diperbarui.');
@@ -137,8 +139,8 @@ final class UpdateInstaller
         $steps[] = 'Isi paket diperiksa (v' . $newVersion . ').';
 
         // 4) Daftar perubahan berkas
-        $incoming = self::listFiles($src);
-        $current  = self::listFiles(self::root());
+        $incoming = self::listFiles($src, $dirs);
+        $current  = self::listFiles(self::root(), $dirs);
         $removed  = array_diff_key($current, $incoming);   // berkas lama yang tidak ada lagi di versi baru
         unset($removed['app/Config/release-manifest.json']);
 
@@ -202,10 +204,10 @@ final class UpdateInstaller
     }
 
     /** @return array<string, true> berkas yang dikelola pembaruan (relatif) */
-    private static function listFiles(string $root): array
+    private static function listFiles(string $root, array $dirs = self::DIRS): array
     {
         $out = [];
-        foreach (self::DIRS as $d) {
+        foreach ($dirs as $d) {
             if (! is_dir($root . '/' . $d)) {
                 continue;
             }

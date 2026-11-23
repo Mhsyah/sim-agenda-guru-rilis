@@ -11,6 +11,14 @@ class Changelog
     /** @var list<array{version: string, date: string, notes: list<string>}> */
     public static array $releases = [
         [
+            'version' => '0.2.4',
+            'date'    => '2026-11-23',
+            'notes'   => [
+                'Perbaikan pembaruan otomatis: unduhan GitHub yang dialihkan (302) kini diikuti.',
+                'Folder vendor ikut diperbarui dari paket rilis; instalasi lama dari repo kode dikenali & diperbarui.',
+            ],
+        ],
+        [
             'version' => '0.2.3',
             'date'    => '2026-11-23',
             'notes'   => [
