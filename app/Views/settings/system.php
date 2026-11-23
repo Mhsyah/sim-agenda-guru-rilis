@@ -301,7 +301,7 @@ $when = static fn ($ts) => fmt_date(date('Y-m-d', (int) $ts)) . ', ' . date('H:i
             <details class="ss-ver-all mt-2" open><summary>Rincian pemasangan</summary>
                 <ol class="ss-ver-steps"><?php foreach ($steps as $st): ?><li><?= esc($st) ?></li><?php endforeach ?></ol></details>
         <?php endif ?>
-        <?php if (! empty($cmt['dev'])): ?>
+        <?php if (! empty($cmt['dev']) && empty($blk)): ?>
             <p class="ss-ver-meta">Mode pengembangan: perbarui dengan git pull, lalu terbitkan rilis (<code>php scripts/build-release.php --publish</code>).</p>
         <?php endif ?>
         <?php if ($cmt): ?>

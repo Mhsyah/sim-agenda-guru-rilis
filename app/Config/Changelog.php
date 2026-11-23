@@ -11,6 +11,14 @@ class Changelog
     /** @var list<array{version: string, date: string, notes: list<string>}> */
     public static array $releases = [
         [
+            'version' => '0.2.6',
+            'date'    => '2026-11-23',
+            'notes'   => [
+                'Server production tidak lagi dianggap "mode pengembangan" walau ada folder .git sisa git clone lama; pembaruan tetap dipasang dari paket rilis.',
+                'Pesan ganda di kartu versi Status Sistem dirapikan.',
+            ],
+        ],
+        [
             'version' => '0.2.5',
             'date'    => '2026-11-23',
             'notes'   => [

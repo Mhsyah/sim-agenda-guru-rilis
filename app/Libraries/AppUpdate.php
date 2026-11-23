@@ -273,6 +273,22 @@ final class AppUpdate
     /** Untuk pengujian: commit terpasang & status development tiruan. */
     public static ?string $installedOverride = null;
     public static ?bool $devOverride = null;
+    public static ?bool $prodOverride = null;
+
+    /** Server production (CI_ENVIRONMENT=production)? */
+    public static function isProduction(): bool
+    {
+        return self::$prodOverride ?? (ENVIRONMENT === 'production');
+    }
+
+    /** Remote "origin" pada .git menunjuk ke repo rilis (appupdate source)? */
+    public static function originIsSource(string $root): bool
+    {
+        $origin = strtolower((string) self::gitOrigin($root));
+        $src    = strtolower(trim((string) config('AppUpdate')->source));
+
+        return $src !== '' && (bool) preg_match('#[/:]' . preg_quote($src, '#') . '(\.git)?/?$#', $origin);
+    }
 
     /** URL remote "origin" dari .git/config (tanpa menjalankan git), atau null. */
     public static function gitOrigin(string $root): ?string
@@ -291,6 +307,7 @@ final class AppUpdate
     /**
      * Folder development: hasil git clone dari repo SELAIN repo rilis (mis. repo kode private).
      * Di sini pembaruan otomatis tidak dijalankan & perbandingan commit dilewati (perbarui dengan git pull lalu build rilis).
+     * Server production TIDAK pernah dianggap development: folder .git sisa clone lama diabaikan, pembaruan lewat paket ZIP.
      */
     public static function isDevCheckout(?string $root = null): bool
     {
@@ -298,13 +315,11 @@ final class AppUpdate
             return self::$devOverride;
         }
         $root ??= rtrim(ROOTPATH, '/\\');
-        if (! is_dir($root . '/.git')) {
+        if (! is_dir($root . '/.git') || self::isProduction()) {
             return false;
         }
-        $origin = strtolower((string) self::gitOrigin($root));
-        $src    = strtolower(trim((string) config('AppUpdate')->source));
 
-        return $src === '' || ! preg_match('#[/:]' . preg_quote($src, '#') . '(\.git)?/?$#', $origin);
+        return ! self::originIsSource($root);
     }
 
     public static function installedCommit(): ?string

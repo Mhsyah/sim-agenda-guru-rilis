@@ -36,10 +36,20 @@ final class UpdateInstaller
         return self::root() . '/writable/update';
     }
 
-    /** Instalasi hasil git clone? */
+    /** Instalasi hasil git clone (yang diperbarui dengan git pull)? */
     public static function isGit(): bool
     {
-        return is_dir(self::root() . '/.git');
+        return is_dir(self::root() . '/.git') && ! self::ignoresGit();
+    }
+
+    /**
+     * Folder .git asing di server production (mis. sisa git clone repo kode private): diabaikan,
+     * pembaruan dipasang dari paket ZIP repo rilis seperti instalasi biasa.
+     */
+    public static function ignoresGit(): bool
+    {
+        return self::$root === null && is_dir(self::root() . '/.git')
+            && AppUpdate::isProduction() && ! AppUpdate::originIsSource(self::root());
     }
 
     /** Alasan pembaruan TIDAK bisa dipasang dari aplikasi, atau null bila bisa. */
