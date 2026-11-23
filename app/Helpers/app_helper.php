@@ -5,7 +5,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 if (! function_exists('app_version')) {
     function app_version(): string
     {
-        return '0.2.4';
+        return '0.2.5';
     }
 }
 

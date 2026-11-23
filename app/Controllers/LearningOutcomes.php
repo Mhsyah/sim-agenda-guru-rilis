@@ -28,7 +28,7 @@ class LearningOutcomes extends CrudController
         return [
             'subject_id' => ['label' => 'Mapel', 'options' => Lookup::teachingSubjects()],
             'phase'      => ['label' => 'Fase', 'options' => phases()],
-            'semester_id' => ['label' => 'Semester', 'options' => Lookup::semesters(), 'custom' => true],
+            'semester_id' => ['label' => 'Semester', 'options' => Lookup::semesters(), 'custom' => true, 'default' => (string) Period::semesterId()],
         ];
     }
 
@@ -57,7 +57,7 @@ class LearningOutcomes extends CrudController
             'semester_id'   => ['label' => 'Semester', 'type' => 'select', 'options' => ($sems = Lookup::semesters()), 'rules' => 'permit_empty|in_list[' . implode(',', array_keys($sems) ?: [0]) . ']', 'empty' => '— Keduanya (Ganjil & Genap) —'],
             'code'          => ['label' => 'Kode CP', 'rules' => 'permit_empty|max_length[30]', 'placeholder' => 'CP-MTK-D-01'],
             'description'   => ['label' => 'Deskripsi capaian', 'type' => 'textarea', 'rules' => 'required|max_length[5000]', 'span' => 'full'],
-            'objective_ids' => ['label' => 'TP terkait', 'type' => 'checkboxes', 'groups' => Lookup::objectivesGrouped(), 'filterBy' => 'subject_id', 'span' => 'full', 'help' => 'Hanya TP dari mapel yang dipilih yang ditampilkan.'],
+            'objective_ids' => ['label' => 'TP terkait', 'type' => 'checkboxes', 'groups' => Lookup::objectivesForSemester(null, $row ? CurriculumLinks::objectivesOf((int) $row['id']) : []), 'filterBy' => 'subject_id', 'span' => 'full', 'help' => 'Hanya TP dari mapel yang dipilih yang ditampilkan.'],
             'is_active'     => ['label' => 'Aktif (hapus centang untuk mengarsipkan sementara)', 'type' => 'checkbox', 'default' => $row ? null : 1],
         ];
     }

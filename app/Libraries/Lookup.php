@@ -195,23 +195,43 @@ final class Lookup
     /**
      * TP untuk formulir agenda & asesmen: semester aktif + TP "keduanya"; $keepId = TP pada data lama tetap tampil.
      */
-    public static function objectivesForSemester(?int $keepId = null): array
+    public static function objectivesForSemester(?int $keepId = null, array $keepIds = []): array
     {
-        $sem = (int) Period::semesterId();
-        $key = __FUNCTION__ . '|' . $sem . '|' . (int) $keepId;
+        $sem  = (int) Period::semesterId();
+        $keep = array_values(array_unique(array_filter(array_map('intval', array_merge($keepIds, [$keepId])))));
+        $key  = __FUNCTION__ . '|' . $sem . '|' . implode(',', $keep);
         if (array_key_exists($key, self::$memo)) {
             return self::$memo[$key];
         }
-        $m = new LearningObjectiveModel();
-        if ($sem) {
-            $m->groupStart()->where('semester_id', null)->orWhere('semester_id', $sem);
-            if ($keepId) {
-                $m->orWhere('id', $keepId);
-            }
-            $m->groupEnd();
+
+        return self::$memo[$key] = self::grouped(self::semesterScope(new LearningObjectiveModel(), $sem, $keep), static fn ($r) => trim(($r['code'] ? $r['code'] . ' · ' : '') . mb_strimwidth($r['description'], 0, 90, '…')));
+    }
+
+    /** CP semester aktif + CP "keduanya"; $keepIds = CP yang sudah terhubung tetap tampil. */
+    public static function outcomesForSemester(array $keepIds = []): array
+    {
+        $sem  = (int) Period::semesterId();
+        $keep = array_values(array_unique(array_filter(array_map('intval', $keepIds))));
+        $key  = __FUNCTION__ . '|' . $sem . '|' . implode(',', $keep);
+        if (array_key_exists($key, self::$memo)) {
+            return self::$memo[$key];
         }
 
-        return self::$memo[$key] = self::grouped($m, static fn ($r) => trim(($r['code'] ? $r['code'] . ' · ' : '') . mb_strimwidth($r['description'], 0, 90, '…')));
+        return self::$memo[$key] = self::grouped(self::semesterScope(new LearningOutcomeModel(), $sem, $keep), static fn ($r) => trim(($r['code'] ? $r['code'] . ' · ' : '') . $r['element_name'] . ' — ' . mb_strimwidth($r['description'], 0, 70, '…')));
+    }
+
+    /** Batasi ke semester $sem + data "keduanya" (semester kosong) + id yang wajib tetap tampil. */
+    private static function semesterScope($model, int $sem, array $keep)
+    {
+        if ($sem) {
+            $model->groupStart()->where('semester_id', null)->orWhere('semester_id', $sem);
+            if ($keep) {
+                $model->orWhereIn('id', $keep);
+            }
+            $model->groupEnd();
+        }
+
+        return $model;
     }
 
     /** CP dikelompokkan per mapel. */

@@ -27,7 +27,7 @@ class LearningObjectives extends CrudController
     {
         return [
             'subject_id'  => ['label' => 'Mapel', 'options' => Lookup::teachingSubjects()],
-            'semester_id' => ['label' => 'Semester', 'options' => Lookup::semesters(), 'custom' => true],
+            'semester_id' => ['label' => 'Semester', 'options' => Lookup::semesters(), 'custom' => true, 'default' => (string) Period::semesterId()],
         ];
     }
 
@@ -62,7 +62,7 @@ class LearningObjectives extends CrudController
             'kktp_intervals'    => ['label' => 'KKTP — interval nilai', 'rules' => 'permit_empty|max_length[60]', 'placeholder' => '40,65,85',
                 'help' => 'Batas atas tingkat 1–3. Kosong = bawaan: ' . \App\Libraries\Kktp::describe(null) . '.'],
             'estimated_minutes' => ['label' => 'Alokasi waktu (menit)', 'type' => 'number', 'rules' => 'permit_empty|is_natural|less_than_equal_to[100000]', 'attrs' => ['min' => 0, 'step' => 5], 'help' => 'Tidak boleh negatif.'],
-            'outcome_ids'       => ['label' => 'CP terkait', 'type' => 'checkboxes', 'groups' => Lookup::outcomesGrouped(), 'filterBy' => 'subject_id', 'span' => 'full'],
+            'outcome_ids'       => ['label' => 'CP terkait', 'type' => 'checkboxes', 'groups' => Lookup::outcomesForSemester($row ? CurriculumLinks::outcomesOf((int) $row['id']) : []), 'filterBy' => 'subject_id', 'span' => 'full'],
             'is_active'         => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => $row ? null : 1],
         ];
     }

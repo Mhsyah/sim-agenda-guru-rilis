@@ -11,6 +11,14 @@ class Changelog
     /** @var list<array{version: string, date: string, notes: list<string>}> */
     public static array $releases = [
         [
+            'version' => '0.2.5',
+            'date'    => '2026-11-23',
+            'notes'   => [
+                'TP & CP otomatis tersaring ke semester aktif: daftar TP/CP, halaman ATP/KKTP, dan pilihan CP↔TP terkait (pilih "Semua" untuk melihat seluruhnya).',
+                'TP/CP tanpa semester tetap dianggap berlaku di Ganjil & Genap.',
+            ],
+        ],
+        [
             'version' => '0.2.4',
             'date'    => '2026-11-23',
             'notes'   => [

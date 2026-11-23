@@ -26,7 +26,7 @@ class CurriculumPlans extends BaseController
             'semesters'  => Lookup::semesters(),
             'subject_id' => isset($subjects[$sid]) ? $sid : (int) array_key_first($subjects),
             'grade'      => max(0, min(13, (int) $this->request->getGet('grade'))),
-            'semester'   => (int) $this->request->getGet('semester_id'),
+            'semester'   => $this->request->getGet('semester_id') === null ? (int) Period::semesterId() : (int) $this->request->getGet('semester_id'),
         ];
     }
 
