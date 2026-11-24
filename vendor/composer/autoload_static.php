@@ -154,6 +154,7 @@ class ComposerStaticInit57ce60799ba55cf6ea289cc8133371a4
         'App\\Libraries\\SimpleXlsx' => __DIR__ . '/../..' . '/app/Libraries/SimpleXlsx.php',
         'App\\Libraries\\StudentHistory' => __DIR__ . '/../..' . '/app/Libraries/StudentHistory.php',
         'App\\Libraries\\StudentImporter' => __DIR__ . '/../..' . '/app/Libraries/StudentImporter.php',
+        'App\\Libraries\\TeacherActivity' => __DIR__ . '/../..' . '/app/Libraries/TeacherActivity.php',
         'App\\Libraries\\UpdateInstaller' => __DIR__ . '/../..' . '/app/Libraries/UpdateInstaller.php',
         'App\\Models\\AcademicYearModel' => __DIR__ . '/../..' . '/app/Models/AcademicYearModel.php',
         'App\\Models\\AgendaModel' => __DIR__ . '/../..' . '/app/Models/AgendaModel.php',

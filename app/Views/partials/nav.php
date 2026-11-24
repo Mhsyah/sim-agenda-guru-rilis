@@ -36,16 +36,28 @@ $group = static fn (string $t) => '<p class="nav-group"><span class="nav-group-t
                 <?= $link('teacher-schedules/piket', 'Atur Guru Piket') ?>
             </div>
         </details>
-        <?= $link('academic-years', 'Tahun Pelajaran', 'calendar') ?>
-        <?= $link('semesters', 'Semester', 'layers') ?>
-        <?= $link('subjects', 'Mata Pelajaran', 'book') ?>
-        <?= $link('classes', 'Kelas/Rombel', 'grid') ?>
-        <?= $link('students', 'Data Siswa', 'users') ?>
-        <?= $link('promotions', 'Kelulusan & Kenaikan', 'graduate') ?>
-        <?= $link('calendar', 'Kalender', 'calendar') ?>
-        <?= $link('imports', 'Impor Data', 'upload') ?>
+        <?php $acadOpen = url_is('academic-years*') || url_is('semesters*') || url_is('subjects*') || url_is('calendar*'); ?>
+        <details class="nav-tree" <?= $acadOpen ? 'open' : '' ?>>
+            <summary class="nav-link<?= $acadOpen ? ' is-parent' : '' ?>" title="Tahun Pelajaran"><?= icon('calendar', 'size-[1.1rem] shrink-0') ?><span class="nav-label truncate">Tahun Pelajaran</span><span class="nav-caret"><?= icon('chevron-down', 'size-4') ?></span></summary>
+            <div class="nav-sub">
+                <?= $link('academic-years', 'Tahun Pelajaran') ?>
+                <?= $link('semesters', 'Semester') ?>
+                <?= $link('subjects', 'Mata Pelajaran') ?>
+                <?= $link('calendar', 'Kalender') ?>
+            </div>
+        </details>
+        <?php $stuOpen = url_is('students*') || url_is('classes*') || url_is('promotions*'); ?>
+        <details class="nav-tree" <?= $stuOpen ? 'open' : '' ?>>
+            <summary class="nav-link<?= $stuOpen ? ' is-parent' : '' ?>" title="Data Siswa"><?= icon('users', 'size-[1.1rem] shrink-0') ?><span class="nav-label truncate">Data Siswa</span><span class="nav-caret"><?= icon('chevron-down', 'size-4') ?></span></summary>
+            <div class="nav-sub">
+                <?= $link('students', 'Data Siswa') ?>
+                <?= $link('classes', 'Kelas/Rombel') ?>
+                <?= $link('promotions', 'Kelulusan & Kenaikan') ?>
+            </div>
+        </details>
 
-        <?= $group('Sistem') ?>
+        <?= $group('Pengaturan Sistem') ?>
+        <?= $link('imports', 'Impor Data', 'upload') ?>
         <?= $link('system-status', 'Status Sistem', 'monitor') ?>
         <?= $link('dapodik', 'Sinkron Dapodik', 'refresh') ?>
         <?= $link('settings/backup', 'Backup & Restore', 'database') ?>

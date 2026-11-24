@@ -80,6 +80,7 @@ return array(
     'App\\Libraries\\SimpleXlsx' => $baseDir . '/app/Libraries/SimpleXlsx.php',
     'App\\Libraries\\StudentHistory' => $baseDir . '/app/Libraries/StudentHistory.php',
     'App\\Libraries\\StudentImporter' => $baseDir . '/app/Libraries/StudentImporter.php',
+    'App\\Libraries\\TeacherActivity' => $baseDir . '/app/Libraries/TeacherActivity.php',
     'App\\Libraries\\UpdateInstaller' => $baseDir . '/app/Libraries/UpdateInstaller.php',
     'App\\Models\\AcademicYearModel' => $baseDir . '/app/Models/AcademicYearModel.php',
     'App\\Models\\AgendaModel' => $baseDir . '/app/Models/AgendaModel.php',

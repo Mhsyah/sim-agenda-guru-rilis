@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Libraries\Audit;
 use App\Libraries\Auth;
 use App\Libraries\Lookup;
+use App\Libraries\TeacherActivity;
 use App\Models\AgendaModel;
 use App\Models\AssessmentModel;
 use App\Models\UserModel;
@@ -13,6 +14,17 @@ use CodeIgniter\Model;
 /** Data guru & pengguna (dikelola admin teknis). */
 class Users extends CrudController
 {
+    /** Status kepegawaian akun: label + warna badge. Hanya "aktif" yang dapat login. */
+    public const STATUSES = [
+        'aktif'    => ['Aktif', 'success'],
+        'nonaktif' => ['Nonaktif', 'warning'],
+        'mutasi'   => ['Mutasi', 'info'],
+        'keluar'   => ['Keluar', 'danger'],
+    ];
+
+    /** @var array<int, array> progres kegiatan per guru (halaman ini) */
+    private array $activity = [];
+
     /** @var array<int, string> kode mapel per id (untuk warna kode mapel) */
     private array $subjectCodes = [];
 
@@ -35,7 +47,7 @@ class Users extends CrudController
     {
         return [
             'role'      => ['label' => 'Peran', 'options' => Auth::ROLES],
-            'is_active' => ['label' => 'Status', 'options' => ['1' => 'Aktif', '0' => 'Nonaktif']],
+            'employment_status' => ['label' => 'Status', 'options' => array_map(static fn ($s) => $s[0], self::STATUSES)],
         ];
     }
 
@@ -43,7 +55,7 @@ class Users extends CrudController
     {
         $ag = db_connect()->prefixTable('teaching_agendas');
         $us = db_connect()->prefixTable('users');
-        $m->select('users.id, users.name, users.email, users.nip, users.role, users.is_active, users.last_login_at, users.gender, users.photo')
+        $m->select('users.id, users.name, users.email, users.nip, users.role, users.is_active, users.last_login_at, users.gender, users.photo, users.employment_status, users.status_date, users.status_note, users.must_change_password')
             ->select("(SELECT COUNT(*) FROM {$ag} a WHERE a.user_id = {$us}.id AND a.deleted_at IS NULL) AS agenda_count", false);
 
         return parent::listQuery($m, $filters);
@@ -63,7 +75,10 @@ class Users extends CrudController
                 'active'   => $c(static fn ($b) => $b->where('is_active', 1)),
                 'inactive' => $c(static fn ($b) => $b->where('is_active', 0)),
                 'never'    => $c(static fn ($b) => $b->where('is_active', 1)->where('last_login_at', null)),
+                'moved'    => $c(static fn ($b) => $b->whereIn('employment_status', ['mutasi', 'keluar'])),
             ],
+            'activity'     => $this->activity,
+            'newPassword'  => session('new_password'),
             'subjectNames' => $this->subjectNames,
             'subjectCodes' => $this->subjectCodes,
             'classNames'   => $this->classNames,
@@ -156,6 +171,15 @@ class Users extends CrudController
         if (! $old) {
             $data['theme_pref'] = 'system';
         }
+        // Centang "akun aktif" di formulir menyelaraskan status kepegawaian (mutasi/keluar tetap dipertahankan)
+        if (array_key_exists('is_active', $data)) {
+            $cur = $old['employment_status'] ?? 'aktif';
+            if ((int) $data['is_active']) {
+                $data['employment_status'] = 'aktif';
+            } elseif ($cur === 'aktif') {
+                $data['employment_status'] = 'nonaktif';
+            }
+        }
         if ($old && (int) $old['id'] === (int) Auth::id()) {
             if ($data['role'] !== 'admin' || ! (int) $data['is_active']) {
                 return 'Anda tidak dapat menonaktifkan atau mengubah peran akun Anda sendiri.';
@@ -192,6 +216,66 @@ class Users extends CrudController
                 $this->classNames[(int) $r['user_id']][(int) $r['subject_id']][] = $classes[$r['class_group_id']];
             }
         }
+        $teachers       = array_map('intval', array_column(array_filter($rows, static fn ($r) => ($r['role'] ?? '') === 'teacher'), 'id'));
+        $this->activity = TeacherActivity::forUsers($teachers);
+    }
+
+    /**
+     * Buat kata sandi acak baru; ditampilkan SEKALI ke admin dan pengguna wajib menggantinya saat login.
+     * Kata sandi tetap disimpan sebagai hash (tidak dapat dibaca ulang).
+     */
+    public function resetPassword(int $id)
+    {
+        $row = $this->findOr404($id);
+        if ($id === (int) Auth::id()) {
+            return redirect()->to(site_url('users'))->with('error', 'Ganti kata sandi Anda sendiri di menu Keamanan & Kata Sandi.');
+        }
+        $pw = self::randomPassword();
+        (new UserModel())->update($id, ['password_hash' => password_hash($pw, PASSWORD_DEFAULT), 'must_change_password' => 1]);
+        Audit::log('password_reset', 'user', $id);
+
+        return redirect()->to(site_url('users') . '#user-' . $id)->with('new_password', ['id' => $id, 'name' => $row['name'], 'email' => $row['email'], 'password' => $pw])
+            ->with('success', 'Kata sandi baru untuk ' . $row['name'] . ' dibuat. Salin dan berikan kepada yang bersangkutan.');
+    }
+
+    /** 12 karakter acak tanpa huruf yang mudah tertukar (0/O, 1/l/I). */
+    public static function randomPassword(int $len = 12): string
+    {
+        $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+        $out   = '';
+        for ($i = 0; $i < $len; $i++) {
+            $out .= $chars[random_int(0, strlen($chars) - 1)];
+        }
+
+        return $out;
+    }
+
+    /** Ubah status: aktif / nonaktif / mutasi / keluar (riwayat agenda & nilai tetap tersimpan). */
+    public function setStatus(int $id)
+    {
+        $row    = $this->findOr404($id);
+        $status = (string) $this->request->getPost('status');
+        if (! isset(self::STATUSES[$status])) {
+            return redirect()->to(site_url('users'))->with('error', 'Status tidak dikenali.');
+        }
+        if ($id === (int) Auth::id() && $status !== 'aktif') {
+            return redirect()->to(site_url('users'))->with('error', 'Anda tidak dapat menonaktifkan akun Anda sendiri.');
+        }
+        if ($row['role'] === 'admin' && $status !== 'aktif' && $this->activeAdmins($id) === 0) {
+            return redirect()->to(site_url('users'))->with('error', 'Harus ada minimal satu admin teknis aktif.');
+        }
+        $date = (string) $this->request->getPost('status_date');
+        $date = preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) && strtotime($date) ? $date : date('Y-m-d');
+        $note = mb_substr(trim((string) $this->request->getPost('status_note')), 0, 255);
+        (new UserModel())->update($id, [
+            'employment_status' => $status,
+            'is_active'         => $status === 'aktif' ? 1 : 0,
+            'status_date'       => $status === 'aktif' ? null : $date,
+            'status_note'       => $status === 'aktif' || $note === '' ? null : $note,
+        ]);
+        Audit::log('status_' . $status, 'user', $id);
+
+        return redirect()->to(site_url('users') . '#user-' . $id)->with('success', $row['name'] . ': status diubah menjadi ' . self::STATUSES[$status][0] . '.');
     }
 
     /** @return list<string> */

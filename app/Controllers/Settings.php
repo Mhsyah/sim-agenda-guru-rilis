@@ -260,7 +260,7 @@ class Settings extends BaseController
         if (! password_verify((string) $this->request->getPost('current_password'), $user['password_hash'])) {
             return $this->back('Kata sandi saat ini salah.', ['current_password' => 'Kata sandi saat ini salah.']);
         }
-        (new UserModel())->update($user['id'], ['password_hash' => password_hash((string) $this->request->getPost('new_password'), PASSWORD_DEFAULT)]);
+        (new UserModel())->update($user['id'], ['password_hash' => password_hash((string) $this->request->getPost('new_password'), PASSWORD_DEFAULT), 'must_change_password' => 0]);
         session()->regenerate(true);
         session()->remove('pw_default');
         Audit::log('password_change', 'user', (int) $user['id']);

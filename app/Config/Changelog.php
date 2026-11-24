@@ -11,6 +11,17 @@ class Changelog
     /** @var list<array{version: string, date: string, notes: list<string>}> */
     public static array $releases = [
         [
+            'version' => '0.3.0',
+            'date'    => '2026-11-24',
+            'notes'   => [
+                'Kartu Guru & Pengguna: tombol "Buat kata sandi baru" (ditampilkan sekali dengan ikon mata & salin; pengguna wajib menggantinya saat login).',
+                'Status akun Aktif / Nonaktif / Mutasi / Keluar dengan tanggal & keterangan; riwayat agenda & nilai tetap tersimpan.',
+                'Grafik agenda per minggu (8 minggu) dan persentase agenda terisi dibanding jadwal semester ini di kartu guru.',
+                'Ikon mata untuk melihat kata sandi di halaman login dan semua kolom kata sandi.',
+                'Menu admin disusun ulang: submenu Tahun Pelajaran (Semester, Mapel, Kalender) & Data Siswa (Kelas/Rombel, Kelulusan & Kenaikan); Impor Data pindah ke Pengaturan Sistem.',
+            ],
+        ],
+        [
             'version' => '0.2.6',
             'date'    => '2026-11-23',
             'notes'   => [

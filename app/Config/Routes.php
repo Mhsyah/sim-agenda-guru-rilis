@@ -79,6 +79,8 @@ $routes->group('', ['filter' => 'auth:admin'], static function (RouteCollection 
     $routes->post('settings/school', 'Settings::saveSchool');
 
     $crud($routes, 'users', 'Users');
+    $routes->post('users/(:num)/reset-password', 'Users::resetPassword/$1');
+    $routes->post('users/(:num)/status', 'Users::setStatus/$1');
     $routes->get('teacher-schedules', 'TeacherSchedules::index');
     $routes->get('promotions', 'Promotions::index');
     $routes->get('schedule-builder', static fn () => redirect()->to(site_url('schedule-builder/generate')));
