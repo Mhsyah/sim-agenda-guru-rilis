@@ -57,6 +57,7 @@ if ($dpDiff) {
     $attention[] = ['warning', $dpDiff . ' data berbeda dengan Dapodik pada pengecekan terakhir.', site_url('dapodik'), 'Sinkron'];
 }
 $migPending = \App\Controllers\SystemStatus::pendingMigrations();
+$schemaMissing = $migPending ? [] : \App\Libraries\SchemaRepair::missing();
 $integ   = \App\Libraries\Integrity::check();
 $intDiff = $integ['active'] ? count($integ['changed']) + count($integ['missing']) + count($integ['added']) : 0;
 if ($intDiff) {
@@ -115,6 +116,21 @@ $tiles = [
         <form method="post" action="<?= site_url('system-status/migrate') ?>" data-progress="Memperbarui struktur database"
               data-confirm="Jalankan pembaruan struktur database sekarang? Database dibackup otomatis terlebih dahulu." data-confirm-label="Ya, jalankan">
             <?= csrf_field() ?><button class="btn btn-primary"><?= icon('database', 'size-4') ?> Jalankan migrasi</button>
+        </form>
+    </div>
+</section>
+<?php endif ?>
+<?php if ($schemaMissing): ?>
+<section class="card ss-migrate mb-5" aria-labelledby="ss-schema">
+    <div class="flex flex-wrap items-start gap-3">
+        <span class="ss-health-ico"><?= icon('database', 'size-6') ?></span>
+        <div class="min-w-0 flex-1">
+            <h2 id="ss-schema" class="text-base font-bold">Tabel database belum lengkap</h2>
+            <p class="text-xs text-muted">Migrasi tercatat selesai, tetapi tabel berikut tidak ada di database. Klik perbaiki untuk membuatnya (data lain tidak diubah).</p>
+            <ul class="mt-1 font-mono text-xs text-muted"><?php foreach ($schemaMissing as $tb): ?><li><?= esc($tb) ?></li><?php endforeach ?></ul>
+        </div>
+        <form method="post" action="<?= site_url('system-status/repair-schema') ?>" data-progress="Memperbaiki struktur database">
+            <?= csrf_field() ?><button class="btn btn-primary"><?= icon('database', 'size-4') ?> Perbaiki struktur database</button>
         </form>
     </div>
 </section>

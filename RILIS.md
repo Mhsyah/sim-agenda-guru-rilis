@@ -1,4 +1,4 @@
-# Agenda Guru — paket rilis v0.4.1
+# Agenda Guru — paket rilis v0.4.2
 
 Repo ini hanya berisi paket rilis siap pakai (tanpa .env dan data sekolah).
 Pasang: unduh/clone, salin .env.example menjadi .env, buka aplikasi untuk wizard instalasi.

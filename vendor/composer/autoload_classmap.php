@@ -78,6 +78,7 @@ return array(
     'App\\Libraries\\ScheduleGenerator' => $baseDir . '/app/Libraries/ScheduleGenerator.php',
     'App\\Libraries\\ScheduleKit' => $baseDir . '/app/Libraries/ScheduleKit.php',
     'App\\Libraries\\SchedulePdfImporter' => $baseDir . '/app/Libraries/SchedulePdfImporter.php',
+    'App\\Libraries\\SchemaRepair' => $baseDir . '/app/Libraries/SchemaRepair.php',
     'App\\Libraries\\SchoolLogo' => $baseDir . '/app/Libraries/SchoolLogo.php',
     'App\\Libraries\\SimpleXlsx' => $baseDir . '/app/Libraries/SimpleXlsx.php',
     'App\\Libraries\\StudentHistory' => $baseDir . '/app/Libraries/StudentHistory.php',

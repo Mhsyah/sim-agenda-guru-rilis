@@ -186,8 +186,26 @@ class SystemStatus extends BaseController
 
             return $out;
         } catch (\Throwable $e) {
+            log_message('error', 'Cek migrasi tertunda gagal: ' . $e->getMessage());
+
             return [];
         }
+    }
+
+    /** Buat ulang tabel aplikasi yang hilang (tidak mengubah data lain, jadi tanpa backup). */
+    public function repairSchema()
+    {
+        try {
+            $made = \App\Libraries\SchemaRepair::repair();
+        } catch (\Throwable $e) {
+            log_message('error', 'Perbaikan struktur database gagal: ' . $e->getMessage());
+
+            return redirect()->to(site_url('system-status'))->with('error', 'Perbaikan struktur gagal: ' . mb_substr($e->getMessage(), 0, 200));
+        }
+        cache()->clean();
+        Audit::log('schema_repair', 'system', null, null, ['dibuat' => $made]);
+
+        return redirect()->to(site_url('system-status'))->with('success', $made ? 'Tabel dibuat: ' . implode(', ', $made) . '.' : 'Struktur database sudah lengkap.');
     }
 
     /** Jalankan migrasi tertunda dari halaman (untuk hosting tanpa Terminal/SSH); database dibackup dulu. */
@@ -206,6 +224,7 @@ class SystemStatus extends BaseController
         }
         try {
             service('migrations', null, null, false)->setNamespace(null)->latest();
+            \App\Libraries\SchemaRepair::repair(); // jaga-jaga: tabel yang tercatat dibuat tetapi tidak ada
         } catch (\Throwable $e) {
             log_message('error', 'Migrasi dari Status Sistem gagal: ' . $e->getMessage());
             Audit::log('migrate', 'system', null, null, ['berhasil' => false, 'backup' => $backup]);

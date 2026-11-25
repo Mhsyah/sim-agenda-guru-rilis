@@ -152,6 +152,7 @@ class ComposerStaticInit57ce60799ba55cf6ea289cc8133371a4
         'App\\Libraries\\ScheduleGenerator' => __DIR__ . '/../..' . '/app/Libraries/ScheduleGenerator.php',
         'App\\Libraries\\ScheduleKit' => __DIR__ . '/../..' . '/app/Libraries/ScheduleKit.php',
         'App\\Libraries\\SchedulePdfImporter' => __DIR__ . '/../..' . '/app/Libraries/SchedulePdfImporter.php',
+        'App\\Libraries\\SchemaRepair' => __DIR__ . '/../..' . '/app/Libraries/SchemaRepair.php',
         'App\\Libraries\\SchoolLogo' => __DIR__ . '/../..' . '/app/Libraries/SchoolLogo.php',
         'App\\Libraries\\SimpleXlsx' => __DIR__ . '/../..' . '/app/Libraries/SimpleXlsx.php',
         'App\\Libraries\\StudentHistory' => __DIR__ . '/../..' . '/app/Libraries/StudentHistory.php',

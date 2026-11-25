@@ -11,6 +11,14 @@ class Changelog
     /** @var list<array{version: string, date: string, notes: list<string>}> */
     public static array $releases = [
         [
+            'version' => '0.4.2',
+            'date'    => '2026-11-25',
+            'notes'   => [
+                'Perbaikan: tabel kegiatan di luar KBM dipastikan terbuat (migrasi perbaikan tanpa foreign key); galat pembuatan tabel kini ditampilkan, tidak lagi diam.',
+                'Status Sistem mendeteksi tabel yang hilang padahal migrasinya tercatat selesai, dengan tombol "Perbaiki struktur database".',
+            ],
+        ],
+        [
             'version' => '0.4.1',
             'date'    => '2026-11-25',
             'notes'   => [

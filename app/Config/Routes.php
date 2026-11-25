@@ -137,6 +137,7 @@ $routes->group('', ['filter' => 'auth:admin'], static function (RouteCollection 
     $routes->post('system-status/update-check', 'SystemStatus::updateCheck');
     $routes->post('system-status/update-install', 'SystemStatus::installUpdate');
     $routes->post('system-status/migrate', 'SystemStatus::runMigrations');
+    $routes->post('system-status/repair-schema', 'SystemStatus::repairSchema');
 });
 
 // ------------------------------------------------------------------ Guru: pembelajaran & penilaian (data milik masing-masing guru)

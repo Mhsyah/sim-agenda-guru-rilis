@@ -184,6 +184,9 @@ final class UpdateInstaller
         if (! self::$dryDb) {
             try {
                 \Config\Services::migrations(null, null, false)->setNamespace(null)->latest();
+                if ($made = \App\Libraries\SchemaRepair::repair()) {
+                    $steps[] = 'Tabel dibuat ulang: ' . implode(', ', $made) . '.';
+                }
                 if ($left = \App\Controllers\SystemStatus::pendingMigrations()) {
                     $steps[] = count($left) . ' migrasi belum terpasang otomatis — klik "Jalankan migrasi" di Status Sistem.';
                 }
@@ -361,6 +364,9 @@ final class UpdateInstaller
         if (! self::$dryDb) {
             try {
                 \Config\Services::migrations(null, null, false)->setNamespace(null)->latest();
+                if ($made = \App\Libraries\SchemaRepair::repair()) {
+                    $steps[] = 'Tabel dibuat ulang: ' . implode(', ', $made) . '.';
+                }
                 if ($left = \App\Controllers\SystemStatus::pendingMigrations()) {
                     $steps[] = count($left) . ' migrasi belum terpasang otomatis — klik "Jalankan migrasi" di Status Sistem.';
                 }
