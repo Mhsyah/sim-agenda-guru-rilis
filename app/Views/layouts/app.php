@@ -269,12 +269,17 @@ $initials  = $authUser ? mb_strtoupper(implode('', array_map(static fn ($w) => m
 <?php endif ?>
 <?php endif ?>
 
-<dialog id="confirm-dialog" class="m-auto w-[min(92vw,28rem)] rounded-2xl border border-line bg-surface p-6 text-ink shadow-2xl backdrop:bg-slate-900/40 backdrop:backdrop-blur-[2px]" aria-labelledby="confirm-title" aria-describedby="confirm-message">
-    <h2 id="confirm-title" class="text-lg font-semibold">Konfirmasi</h2>
-    <p id="confirm-message" class="mt-2 text-sm text-muted"></p>
-    <div class="mt-6 flex justify-end gap-2">
-        <button type="button" class="btn btn-ghost" id="confirm-no">Batal</button>
-        <button type="button" class="btn btn-danger" id="confirm-yes">Ya, lanjutkan</button>
+<dialog id="confirm-dialog" class="dlg-confirm" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+    <div class="dlg-confirm-body">
+        <span class="dlg-confirm-ico" aria-hidden="true"><?= icon('alert', 'size-5') ?></span>
+        <div class="min-w-0">
+            <h2 id="confirm-title">Konfirmasi</h2>
+            <p id="confirm-message"></p>
+        </div>
+    </div>
+    <div class="dlg-confirm-actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="confirm-no">Batal</button>
+        <button type="button" class="btn btn-danger btn-sm" id="confirm-yes">Ya, lanjutkan</button>
     </div>
 </dialog>
 

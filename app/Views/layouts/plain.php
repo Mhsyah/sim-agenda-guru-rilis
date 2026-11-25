@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title><?= esc($title ?? 'Agenda Guru') ?></title>
     <script>try{var t=localStorage.getItem('ag-theme')||'system';if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}</script>
-    <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>?v=<?= @filemtime(FCPATH . 'assets/css/app.css') ?: 1 ?>">
     <?= favicon_tags(is_file(WRITEPATH . 'installed.lock') ? safe_profile() : null) ?>
 </head>
 <body>

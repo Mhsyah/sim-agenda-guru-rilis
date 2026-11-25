@@ -69,7 +69,6 @@ $group = static fn (string $t) => '<p class="nav-group"><span class="nav-group-t
         <?= $group('Mengajar') ?>
         <?php $calOn = url_is('calendar*') || url_is('agendas*'); ?>
         <a class="nav-link" href="<?= site_url('calendar') ?>" title="Kalender &amp; Agenda" <?= $calOn ? 'aria-current="page"' : '' ?>><?= icon('calendar', 'size-[1.1rem] shrink-0') ?><span class="nav-label truncate">Kalender &amp; Agenda</span></a>
-        <?= $link('activities', 'Kegiatan Luar KBM', 'sparkle') ?>
         <?= $link('schedules', 'Jadwal', 'clock') ?>
         <?= $link('principal-reviews', 'Kesan Kepsek', 'sparkle') ?>
         <?= $link('students', 'Data Siswa', 'users') ?>

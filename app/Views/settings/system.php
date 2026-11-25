@@ -31,7 +31,7 @@ $tableNames = [
     'learning_outcomes' => 'CP', 'learning_objectives' => 'TP', 'outcome_objectives' => 'Relasi CP–TP',
     'school_calendar_events' => 'Kegiatan kalender', 'teaching_schedules' => 'Jadwal', 'teaching_agendas' => 'Agenda',
     'attendances' => 'Daftar hadir', 'assessment_types' => 'Jenis asesmen', 'assessments' => 'Asesmen',
-    'grading_configs' => 'Pengaturan bobot', 'grading_config_items' => 'Item bobot', 'assessment_scores' => 'Nilai', 'principal_reviews' => 'Kesan kepala sekolah', 'audit_logs' => 'Log audit',
+    'grading_configs' => 'Pengaturan bobot', 'grading_config_items' => 'Item bobot', 'assessment_scores' => 'Nilai', 'principal_reviews' => 'Kesan kepala sekolah', 'teacher_activities' => 'Kegiatan luar KBM', 'audit_logs' => 'Log audit',
 ];
 $srv      = array_column(array_map(static fn ($r) => [$r[0], $r[1]], $server), 1, 0);
 $badDirs  = array_values(array_filter($dirs, static fn ($d) => ! $d[1]));
@@ -92,95 +92,151 @@ $tiles = [
     </div>
 </div>
 
-<ul class="ss-tiles mb-5" aria-label="Status singkat">
-    <?php foreach ($tiles as [$label, $val, $ic, $st]): ?>
-        <li class="ss-tile is-<?= $st ?>">
-            <span class="ss-ico"><?= icon($ic, 'size-4') ?></span>
-            <span class="min-w-0"><small><?= esc($label) ?></small><b><?= esc($val) ?></b></span>
-            <span class="ss-dot" aria-label="<?= ['ok' => 'baik', 'warn' => 'perlu perhatian', 'bad' => 'bermasalah'][$st] ?>"></span>
-        </li>
-    <?php endforeach ?>
-</ul>
-
 <div class="ss-layout">
 <div class="min-w-0">
 <?php if ($migPending): ?>
-<section class="card ss-migrate mb-5" aria-labelledby="ss-mig">
-    <div class="flex flex-wrap items-start gap-3">
-        <span class="ss-health-ico"><?= icon('database', 'size-6') ?></span>
-        <div class="min-w-0 flex-1">
-            <h2 id="ss-mig" class="text-base font-bold">Struktur database perlu diperbarui</h2>
-            <p class="text-xs text-muted"><?= count($migPending) ?> pembaruan struktur belum dijalankan (biasanya setelah memasang versi baru). Fitur terkait bisa galat sebelum diperbarui.</p>
-            <ul class="mt-1 font-mono text-xs text-muted"><?php foreach (array_slice($migPending, 0, 5) as $mg): ?><li><?= esc($mg) ?></li><?php endforeach ?></ul>
-        </div>
-        <form method="post" action="<?= site_url('system-status/migrate') ?>" data-progress="Memperbarui struktur database"
-              data-confirm="Jalankan pembaruan struktur database sekarang? Database dibackup otomatis terlebih dahulu." data-confirm-label="Ya, jalankan">
-            <?= csrf_field() ?><button class="btn btn-primary"><?= icon('database', 'size-4') ?> Jalankan migrasi</button>
-        </form>
+<section class="card ss-action mb-4" aria-labelledby="ss-mig">
+    <span class="ss-action-ico"><?= icon('database', 'size-5') ?></span>
+    <div class="min-w-0 flex-1">
+        <h2 id="ss-mig">Struktur database perlu diperbarui</h2>
+        <p><?= count($migPending) ?> pembaruan struktur belum dijalankan (biasanya setelah memasang versi baru). Fitur terkait bisa galat sebelum diperbarui.</p>
+        <ul class="ss-mono"><?php foreach (array_slice($migPending, 0, 5) as $mg): ?><li><?= esc($mg) ?></li><?php endforeach ?></ul>
     </div>
+    <form method="post" action="<?= site_url('system-status/migrate') ?>" data-progress="Memperbarui struktur database"
+          data-confirm="Jalankan pembaruan struktur database sekarang? Database dibackup otomatis terlebih dahulu." data-confirm-label="Ya, jalankan">
+        <?= csrf_field() ?><button class="btn btn-primary btn-sm"><?= icon('database', 'size-4') ?> Jalankan migrasi</button>
+    </form>
 </section>
 <?php endif ?>
 <?php if ($schemaMissing): ?>
-<section class="card ss-migrate mb-5" aria-labelledby="ss-schema">
-    <div class="flex flex-wrap items-start gap-3">
-        <span class="ss-health-ico"><?= icon('database', 'size-6') ?></span>
-        <div class="min-w-0 flex-1">
-            <h2 id="ss-schema" class="text-base font-bold">Tabel database belum lengkap</h2>
-            <p class="text-xs text-muted">Migrasi tercatat selesai, tetapi tabel berikut tidak ada di database. Klik perbaiki untuk membuatnya (data lain tidak diubah).</p>
-            <ul class="mt-1 font-mono text-xs text-muted"><?php foreach ($schemaMissing as $tb): ?><li><?= esc($tb) ?></li><?php endforeach ?></ul>
-        </div>
-        <form method="post" action="<?= site_url('system-status/repair-schema') ?>" data-progress="Memperbaiki struktur database">
-            <?= csrf_field() ?><button class="btn btn-primary"><?= icon('database', 'size-4') ?> Perbaiki struktur database</button>
-        </form>
+<section class="card ss-action mb-4" aria-labelledby="ss-schema">
+    <span class="ss-action-ico"><?= icon('database', 'size-5') ?></span>
+    <div class="min-w-0 flex-1">
+        <h2 id="ss-schema">Tabel database belum lengkap</h2>
+        <p>Migrasi tercatat selesai, tetapi tabel berikut tidak ada di database. Klik perbaiki untuk membuatnya (data lain tidak diubah).</p>
+        <ul class="ss-mono"><?php foreach ($schemaMissing as $tb): ?><li><?= esc($tb) ?></li><?php endforeach ?></ul>
     </div>
+    <form method="post" action="<?= site_url('system-status/repair-schema') ?>" data-progress="Memperbaiki struktur database">
+        <?= csrf_field() ?><button class="btn btn-primary btn-sm"><?= icon('database', 'size-4') ?> Perbaiki struktur database</button>
+    </form>
 </section>
 <?php endif ?>
+
 <?php $warnN = count(array_filter($attention, static fn ($x) => $x[0] !== 'info')); ?>
-<section class="card ss-health mb-5 <?= $warnN ? 'is-warn' : 'is-ok' ?>" aria-labelledby="ss-att">
-    <div class="ss-health-head">
-        <span class="ss-health-ico"><?= icon($warnN ? 'alert' : 'check', 'size-6') ?></span>
-        <div>
-            <h2 id="ss-att" class="text-base font-bold"><?= $warnN ? $warnN . ' hal perlu perhatian' : 'Semua normal' ?></h2>
-            <p class="text-xs text-muted"><?= $warnN ? 'Selesaikan dari atas ke bawah; klik tombol di kanan tiap baris.' : 'Tidak ada yang perlu ditindaklanjuti saat ini.' ?></p>
+<!-- Ringkasan: status keseluruhan + angka penting + hal yang perlu ditindaklanjuti -->
+<section class="card ss-hero ss-health mb-4 <?= $warnN ? 'is-warn' : 'is-ok' ?>" aria-labelledby="ss-att">
+    <div class="ss-hero-head">
+        <span class="ss-health-ico"><?= icon($warnN ? 'alert' : 'check', 'size-5') ?></span>
+        <div class="min-w-0">
+            <h2 id="ss-att"><?= $warnN ? $warnN . ' hal perlu perhatian' : 'Semua normal' ?></h2>
+            <p><?= $warnN ? 'Selesaikan dari atas ke bawah; klik tombol di kanan tiap baris.' : 'Tidak ada yang perlu ditindaklanjuti saat ini.' ?></p>
         </div>
     </div>
+    <ul class="ss-tiles" aria-label="Status singkat">
+        <?php foreach ($tiles as [$label, $val, $ic, $st]): ?>
+            <li class="ss-tile is-<?= $st ?>">
+                <span class="ss-ico"><?= icon($ic, 'size-4') ?></span>
+                <span class="min-w-0"><small><?= esc($label) ?></small><b><?= esc($val) ?></b></span>
+                <span class="ss-dot" aria-label="<?= ['ok' => 'baik', 'warn' => 'perlu perhatian', 'bad' => 'bermasalah'][$st] ?>"></span>
+            </li>
+        <?php endforeach ?>
+    </ul>
     <?php if ($attention): ?>
-        <ul class="ss-att mt-3">
+        <ul class="ss-att">
             <?php foreach ($attention as [$tone, $text, $url, $act]): ?>
                 <li class="is-<?= $tone ?>"><?= icon($tone === 'info' ? 'info' : 'alert', 'size-4 shrink-0') ?><span class="flex-1"><?= esc($text) ?></span>
-                    <?php if ($url): ?><a class="btn btn-ghost btn-sm" href="<?= esc($url, 'attr') ?>"><?= esc($act) ?></a><?php endif ?></li>
+                    <?php if ($url): ?><a class="btn btn-ghost btn-sm" href="<?= esc($url, 'attr') ?>" <?= str_starts_with($url, '#') ? 'data-tab-open="' . esc(substr($url, 1), 'attr') . '"' : '' ?>><?= esc($act) ?></a><?php endif ?></li>
             <?php endforeach ?>
         </ul>
     <?php endif ?>
 </section>
 
-<h2 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Rincian teknis</h2>
+<?php
+$tabs = [
+    'sys-err'     => ['Galat', 'alert', $errors ? (string) count($errors) : ''],
+    'ss-int'      => ['Keutuhan', 'shield', $integ['active'] ? ($intDiff ? (string) $intDiff : '') : ''],
+    'ss-server'   => ['Server', 'monitor', ''],
+    'ss-backup'   => ['Backup', 'archive', (string) (int) $backupCount],
+    'ss-login'    => ['Login', 'users', ''],
+    'ss-dapodik'  => ['Dapodik', 'refresh', $dpDiff ? (string) $dpDiff : ''],
+    'ss-data'     => ['Data', 'layers', ''],
+];
+$activeTab = $errors ? 'sys-err' : ($intDiff ? 'ss-int' : 'ss-server');
+?>
+<!-- Rincian teknis dalam tab (tanpa JS semua panel tampil berurutan) -->
+<section class="card ss-tabs-card" aria-label="Rincian teknis" data-tabs>
+    <div class="ss-tabs" role="tablist" aria-label="Rincian teknis">
+        <?php foreach ($tabs as $id => [$lbl, $ic, $n]): ?>
+            <button type="button" role="tab" id="tab-<?= $id ?>" aria-controls="<?= $id ?>" aria-selected="<?= $id === $activeTab ? 'true' : 'false' ?>" data-tab="<?= $id ?>">
+                <?= icon($ic, 'size-3.5') ?> <?= esc($lbl) ?><?php if ($n !== ''): ?><span class="ss-tab-n<?= in_array($id, ['sys-err', 'ss-int', 'ss-dapodik'], true) ? ' is-warn' : '' ?>"><?= esc($n) ?></span><?php endif ?>
+            </button>
+        <?php endforeach ?>
+    </div>
 
-<!-- Rincian (dilipat) -->
-<div class="ss-more">
-    <details class="card">
-        <summary><?= icon('monitor', 'size-4') ?> Server &amp; database</summary>
-        <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+    <div class="ss-panel" role="tabpanel" id="sys-err" aria-labelledby="tab-sys-err">
+        <h3 class="ss-panel-title">Galat terbaru</h3>
+        <?php if (! $errors): ?>
+            <p class="flex items-center gap-2 text-sm text-ok"><?= icon('check', 'size-4') ?> Tidak ada galat dalam 7 hari terakhir.</p>
+        <?php else: ?>
+            <ul class="grid gap-1.5">
+                <?php foreach ($errors as $e): ?>
+                    <li class="ss-err"><p><?= esc($e['level']) ?> · terakhir <?= esc($e['time']) ?><?= $e['count'] > 1 ? ' · ' . (int) $e['count'] . '×' : '' ?></p><code><?= esc($e['message']) ?></code></li>
+                <?php endforeach ?>
+            </ul>
+            <form method="post" action="<?= site_url('system-status/errors-ack') ?>" class="mt-3 flex flex-wrap items-center gap-2">
+                <?= csrf_field() ?>
+                <button class="btn btn-ghost btn-sm" type="submit"><?= icon('check', 'size-4') ?> Tandai sudah ditangani</button>
+                <span class="text-xs text-muted">Galat ini disembunyikan; berkas log tetap utuh.</span>
+            </form>
+        <?php endif ?>
+        <?php if (! empty($errorsRecovered)): ?>
+            <p class="mt-2 text-xs text-muted"><?= (int) $errorsRecovered ?> galat koneksi database (saat MySQL/Laragon belum berjalan) sudah pulih dengan sendirinya.</p>
+        <?php endif ?>
+    </div>
+
+    <div class="ss-panel" role="tabpanel" id="ss-int" aria-labelledby="tab-ss-int">
+        <h3 class="ss-panel-title">Keutuhan file</h3>
+        <?php if (! $integ['active']): ?>
+            <p class="text-sm text-muted">Aktif otomatis pada paket rilis hosting (dibuat dengan <code>php scripts/build-release.php</code>). Di development file bebas diedit.</p>
+        <?php else: ?>
+            <p class="text-sm">Paket v<?= esc($integ['version']) ?> · <?= (int) $integ['total'] ?> file dipantau · sidik jari <code><?= esc($integ['fingerprint']) ?></code></p>
+            <?php if (! $intDiff): ?>
+                <p class="mt-2 flex items-center gap-2 text-sm text-ok"><?= icon('check', 'size-4') ?> Semua file sama dengan paket rilis resmi.</p>
+            <?php else: ?>
+                <?php foreach (['changed' => 'Diubah', 'added' => 'File baru', 'missing' => 'Hilang'] as $k => $lbl): if (! $integ[$k]) { continue; } ?>
+                    <p class="mt-2 text-xs font-semibold"><?= $lbl ?> (<?= count($integ[$k]) ?>)</p>
+                    <ul class="ss-mono mt-1"><?php foreach (array_slice($integ[$k], 0, 15) as $f): ?><li class="break-all"><?= esc($f) ?></li><?php endforeach ?></ul>
+                <?php endforeach ?>
+                <form method="post" action="<?= site_url('system-status/integrity-accept') ?>" class="mt-3" data-confirm="Catat kondisi file saat ini sebagai versi resmi? Lakukan hanya bila perubahan ini memang Anda pasang sendiri." data-confirm-label="Ya, terima">
+                    <?= csrf_field() ?><button class="btn btn-ghost btn-sm"><?= icon('check', 'size-4') ?> Perubahan ini sah, terima</button>
+                </form>
+            <?php endif ?>
+        <?php endif ?>
+    </div>
+
+    <div class="ss-panel" role="tabpanel" id="ss-server" aria-labelledby="tab-ss-server">
+        <h3 class="ss-panel-title">Server &amp; database</h3>
+        <dl class="ss-dl">
             <?php foreach ($server as [$k, $v, $ok]): ?>
-                <dt class="text-muted"><?= esc($k) ?></dt>
-                <dd class="flex items-center gap-2 break-all"><?= $ok ? '' : icon('alert', 'size-4 shrink-0 text-warn') ?><span><?= esc((string) $v) ?></span></dd>
+                <dt><?= esc($k) ?></dt>
+                <dd><?= $ok ? '' : icon('alert', 'size-4 shrink-0 text-warn') ?><span><?= esc((string) $v) ?></span></dd>
             <?php endforeach ?>
         </dl>
-    </details>
+    </div>
 
-    <details class="card">
-        <summary><?= icon('archive', 'size-4') ?> Backup &amp; penyimpanan <span class="ss-count"><?= (int) $backupCount ?> file</span></summary>
+    <div class="ss-panel" role="tabpanel" id="ss-backup" aria-labelledby="tab-ss-backup">
+        <h3 class="ss-panel-title">Backup &amp; penyimpanan · <?= (int) $backupCount ?> file</h3>
         <?php if ($backups): ?>
-            <ul class="mt-3 grid gap-1 text-sm">
+            <ul class="ss-rows">
                 <?php foreach (array_slice($backups, 0, 5) as $b): ?>
-                    <li class="flex flex-wrap items-center justify-between gap-2"><span class="truncate font-mono text-xs"><?= esc($b['name']) ?></span>
+                    <li><span class="truncate font-mono text-xs"><?= esc($b['name']) ?></span>
                         <span class="text-xs text-muted"><?= $bytes($b['size']) ?> · <?= fmt_date(date('Y-m-d', $b['time'])) ?> <?= date('H:i', $b['time']) ?></span></li>
                 <?php endforeach ?>
             </ul>
         <?php endif ?>
-        <ul class="mt-3 grid gap-1 border-t border-line pt-3 text-sm">
+        <ul class="ss-rows mt-3 border-t border-line pt-3">
             <?php foreach ($dirs as [$name, $ok, $size]): ?>
-                <li class="flex items-center justify-between gap-2"><span class="font-mono text-xs">writable/<?= esc($name) ?></span>
+                <li><span class="font-mono text-xs">writable/<?= esc($name) ?></span>
                     <span class="flex items-center gap-2 text-xs"><span class="text-muted"><?= $bytes($size) ?></span><?= $ok ? '<span class="text-ok">✓</span>' : badge('Tidak dapat ditulis', 'danger') ?></span></li>
             <?php endforeach ?>
         </ul>
@@ -190,85 +246,44 @@ $tiles = [
                 <?= csrf_field() ?><button class="btn btn-ghost btn-sm"><?= icon('trash', 'size-4') ?> Hapus log &gt; 30 hari</button>
             </form>
         </div>
-    </details>
+    </div>
 
-    <details class="card">
-        <summary><?= icon('shield', 'size-4') ?> Percobaan login terbaru</summary>
-        <ul class="mt-3 grid gap-1 text-sm">
-            <?php foreach (array_slice($logins, 0, 6) as $l): ?>
-                <li class="flex flex-wrap items-center gap-2">
-                    <?= badge(['login' => 'Berhasil', 'login_failed' => 'Gagal', 'login_blocked' => 'Dikunci'][$l['action']], $l['action'] === 'login' ? 'success' : 'danger') ?>
-                    <span><?= esc($l['name'] ?? '—') ?></span>
-                    <span class="ml-auto text-xs text-muted"><?= $local($l['created_at']) ?> · IP <?= esc($l['ip_address'] ?? '—') ?></span>
+    <div class="ss-panel" role="tabpanel" id="ss-login" aria-labelledby="tab-ss-login">
+        <h3 class="ss-panel-title">Percobaan login terbaru</h3>
+        <ul class="ss-rows">
+            <?php foreach (array_slice($logins, 0, 8) as $l): ?>
+                <li>
+                    <span class="flex min-w-0 items-center gap-2"><?= badge(['login' => 'Berhasil', 'login_failed' => 'Gagal', 'login_blocked' => 'Dikunci'][$l['action']], $l['action'] === 'login' ? 'success' : 'danger') ?>
+                        <span class="truncate"><?= esc($l['name'] ?? '—') ?></span></span>
+                    <span class="text-xs text-muted"><?= $local($l['created_at']) ?> · IP <?= esc($l['ip_address'] ?? '—') ?></span>
                 </li>
             <?php endforeach ?>
             <?php if (! $logins): ?><li class="text-muted">Belum ada catatan.</li><?php endif ?>
         </ul>
         <a class="mt-3 inline-block text-sm" href="<?= site_url('settings/audit?entity_type=user') ?>">Log audit lengkap →</a>
-    </details>
+    </div>
 
-    <details class="card" id="sys-err" <?= $errors ? 'open' : '' ?>>
-        <summary><?= icon('alert', 'size-4') ?> Galat terbaru <span class="ss-count"><?= count($errors) ?></span></summary>
-        <?php if (! $errors): ?>
-            <p class="mt-3 flex items-center gap-2 text-sm text-ok"><?= icon('check', 'size-4') ?> Tidak ada galat dalam 7 hari terakhir.</p>
-        <?php else: ?>
-            <ul class="mt-3 grid gap-1.5">
-                <?php foreach ($errors as $e): ?>
-                    <li class="rounded-lg bg-surface-2 p-2"><p class="text-xs text-muted"><?= esc($e['level']) ?> · terakhir <?= esc($e['time']) ?><?= $e['count'] > 1 ? ' · ' . (int) $e['count'] . '×' : '' ?></p><p class="break-all font-mono text-xs"><?= esc($e['message']) ?></p></li>
-                <?php endforeach ?>
-            </ul>
-            <form method="post" action="<?= site_url('system-status/errors-ack') ?>" class="mt-3">
-                <?= csrf_field() ?>
-                <button class="btn btn-ghost btn-sm" type="submit"><?= icon('check', 'size-4') ?> Tandai sudah ditangani</button>
-                <span class="ml-2 text-xs text-muted">Galat ini disembunyikan; berkas log tetap utuh.</span>
-            </form>
-        <?php endif ?>
-        <?php if (! empty($errorsRecovered)): ?>
-            <p class="mt-2 text-xs text-muted"><?= (int) $errorsRecovered ?> galat koneksi database (saat MySQL/Laragon belum berjalan) sudah pulih dengan sendirinya.</p>
-        <?php endif ?>
-    </details>
-
-    <details class="card" id="ss-dapodik">
-        <summary><?= icon('refresh', 'size-4') ?> Sinkron Dapodik <span class="ss-count"><?= $dpSet['last'] ? ($dpDiff ? $dpDiff . ' selisih' : 'sesuai') : 'belum' ?></span></summary>
-        <ul class="mt-3 grid gap-1 text-sm">
+    <div class="ss-panel" role="tabpanel" id="ss-dapodik" aria-labelledby="tab-ss-dapodik">
+        <h3 class="ss-panel-title">Sinkron Dapodik · <?= $dpSet['last'] ? ($dpDiff ? $dpDiff . ' selisih' : 'sesuai') : 'belum' ?></h3>
+        <ul class="ss-rows">
             <?php foreach (\App\Libraries\Dapodik::KINDS as $k => $m): $l = $dpSet['last'][$k] ?? null; ?>
-                <li class="flex flex-wrap items-center justify-between gap-2"><span><?= esc($m['label']) ?></span>
+                <li><span><?= esc($m['label']) ?></span>
                     <span class="text-xs text-muted"><?= $l ? fmt_date(date('Y-m-d', (int) $l['time'])) . ' · ' . ((int) $l['counts']['new'] + (int) $l['counts']['changed']) . ' selisih' : 'belum pernah dicek' ?></span></li>
             <?php endforeach ?>
         </ul>
         <a class="btn btn-ghost btn-sm mt-3" href="<?= site_url('dapodik') ?>"><?= icon('refresh', 'size-4') ?> Buka Sinkron Dapodik</a>
-    </details>
+    </div>
 
-    <details class="card" id="ss-int" <?= $intDiff ? 'open' : '' ?>>
-        <summary><?= icon('shield', 'size-4') ?> Keutuhan file <span class="ss-count"><?= $integ['active'] ? ($intDiff ? $intDiff . ' berubah' : 'asli') : 'tidak aktif' ?></span></summary>
-        <?php if (! $integ['active']): ?>
-            <p class="mt-3 text-sm text-muted">Aktif otomatis pada paket rilis hosting (dibuat dengan <code>php scripts/build-release.php</code>). Di development file bebas diedit.</p>
-        <?php else: ?>
-            <p class="mt-3 text-sm">Paket v<?= esc($integ['version']) ?> · <?= (int) $integ['total'] ?> file dipantau · sidik jari <code><?= esc($integ['fingerprint']) ?></code></p>
-            <?php if (! $intDiff): ?>
-                <p class="mt-2 flex items-center gap-2 text-sm text-ok"><?= icon('check', 'size-4') ?> Semua file sama dengan paket rilis resmi.</p>
-            <?php else: ?>
-                <?php foreach (['changed' => 'Diubah', 'added' => 'File baru', 'missing' => 'Hilang'] as $k => $lbl): if (! $integ[$k]) { continue; } ?>
-                    <p class="mt-2 text-xs font-semibold"><?= $lbl ?> (<?= count($integ[$k]) ?>)</p>
-                    <ul class="mt-1 grid gap-0.5 font-mono text-xs"><?php foreach (array_slice($integ[$k], 0, 15) as $f): ?><li class="break-all"><?= esc($f) ?></li><?php endforeach ?></ul>
-                <?php endforeach ?>
-                <form method="post" action="<?= site_url('system-status/integrity-accept') ?>" class="mt-3" data-confirm="Catat kondisi file saat ini sebagai versi resmi? Lakukan hanya bila perubahan ini memang Anda pasang sendiri." data-confirm-label="Ya, terima">
-                    <?= csrf_field() ?><button class="btn btn-ghost btn-sm"><?= icon('check', 'size-4') ?> Perubahan ini sah, terima</button>
-                </form>
-            <?php endif ?>
-        <?php endif ?>
-    </details>
-
-    <details class="card ss-wide">
-        <summary><?= icon('layers', 'size-4') ?> Ukuran data</summary>
-        <ul class="ss-sizes mt-3">
+    <div class="ss-panel" role="tabpanel" id="ss-data" aria-labelledby="tab-ss-data">
+        <h3 class="ss-panel-title">Ukuran data</h3>
+        <ul class="ss-sizes">
             <?php foreach ($counts as $t => $n): ?>
                 <li class="ss-size"><span><?= esc($tableNames[$t] ?? ucfirst(str_replace('_', ' ', $t))) ?></span>
                     <b><?= $n === null ? '—' : number_format($n, 0, ',', '.') ?></b></li>
             <?php endforeach ?>
         </ul>
-    </details>
-</div>
+    </div>
+</section>
 </div>
 <?php
 $upd  = \App\Libraries\AppUpdate::state();

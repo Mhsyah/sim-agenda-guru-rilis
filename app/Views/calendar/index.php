@@ -233,22 +233,17 @@ $agInfo = [
                 </div>
                 <span class="cal-dlg-state" data-cal-state></span>
             </div>
-            <div class="flex items-center gap-2">
-                <details class="cal-add-menu" data-cal-other data-dropdown>
-                    <summary class="btn btn-primary btn-sm"><?= icon('plus', 'size-4') ?> Tambah <?= icon('chevron-down', 'size-3.5') ?></summary>
-                    <div class="cal-add-pop">
-                        <a href="#" data-cal-form data-cal-add="agenda"><?= icon('pen', 'size-4 shrink-0') ?><span><b>Agenda mengajar</b><small>Agenda &amp; jurnal KBM, termasuk di luar jadwal (mis. jam pengganti)</small></span></a>
-                        <a href="#" data-cal-form data-cal-add="activity"><?= icon('sparkle', 'size-4 shrink-0') ?><span><b>Kegiatan lain</b><small>Di luar KBM: rapat, upacara, piket, pelatihan, kepanitiaan, …</small></span></a>
-                    </div>
-                </details>
-                <button type="button" class="btn btn-ghost btn-sm btn-icon" data-cal-close aria-label="Tutup"><?= icon('x', 'size-4') ?></button>
-            </div>
+            <button type="button" class="btn btn-ghost btn-sm btn-icon" data-cal-close aria-label="Tutup"><?= icon('x', 'size-4') ?></button>
         </div>
         <div class="cal-dlg-body" data-cal-body></div>
         <div class="cal-dlg-frame" data-cal-framewrap hidden>
             <iframe title="Formulir Agenda &amp; Jurnal Mengajar" data-cal-frame></iframe>
         </div>
         <div class="cal-dlg-foot" data-cal-foot>
+            <div class="cal-dlg-add" data-cal-other>
+                <a href="#" data-cal-form data-cal-add="agenda"><?= icon('plus', 'size-3.5') ?> Agenda di luar jadwal</a>
+                <a href="#" data-cal-form data-cal-add="activity"><?= icon('plus', 'size-3.5') ?> Kegiatan lain</a>
+            </div>
             <ul class="cal-dlg-legend" aria-label="Keterangan">
                 <li><i class="cal-st is-done"></i> Sudah diisi</li><li><i class="cal-st is-miss"></i> Belum diisi (sudah lewat)</li><li><i class="cal-st is-plan"></i> Akan datang</li><li><i class="cal-st is-act"></i> Kegiatan di luar KBM</li>
             </ul>

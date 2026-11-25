@@ -945,7 +945,7 @@
       if (ev.length) h += '<ul class="cal-dlg-ev">' + ev.map(function (e) { return '<li class="k-' + esc(e.k) + '">' + esc(e.t) + '</li>'; }).join('') + '</ul>';
       if (t.holiday) h += '<p class="alert alert-warning">Tanggal ini tercatat sebagai hari libur. Isi agenda hanya bila tetap ada kegiatan belajar.</p>';
       if (!t.slots.length && !t.extra.length) {
-        h += '<p class="cal-dlg-empty">Tidak ada jadwal mengajar pada tanggal ini. Klik <b>+ Tambah</b> untuk agenda di luar jadwal atau kegiatan lain.</p>';
+        h += '<p class="cal-dlg-empty">Tidak ada jadwal mengajar pada tanggal ini. Gunakan <b>+ Agenda di luar jadwal</b> atau <b>+ Kegiatan lain</b> di bawah.</p>';
       } else {
         h += '<div class="cal-table-wrap"><table class="cal-table"><thead><tr><th>Jam</th><th><span class="sr-only">Status</span></th><th>Kelas · Mapel</th><th>TP</th><th>Pokok bahasan</th><th>Info</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody>'
           + t.slots.map(function (s) { return row(s, 'slot'); }).join('') + t.extra.map(function (s) { return row(s, 'extra'); }).join('')
@@ -996,7 +996,6 @@
       frame.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'embed=1';
       dlg.classList.add('is-form'); wrap.hidden = false; $('[data-cal-body]', dlg).hidden = true; $('[data-cal-foot]', dlg).hidden = true;
       if (back) back.hidden = false; $('[data-cal-kicker]', dlg).textContent = /\/activities\//.test(url) ? 'Kegiatan di luar KBM' : 'Pengisian Agenda & Jurnal Mengajar';
-      var menu = $('details[data-cal-other]', dlg); if (menu) menu.removeAttribute('open');
       var oth = $('[data-cal-other]', dlg), sta = $('[data-cal-state]', dlg); if (oth) oth.hidden = true; if (sta) sta.hidden = true;
     }
     dlg.addEventListener('click', function (e) {
@@ -1038,6 +1037,32 @@
     if (t.matches('[data-sc-miss]')) { var inp = d.getElementById(t.getAttribute('data-sc-miss')); if (inp) { inp.disabled = t.checked; if (t.checked) inp.value = ''; inp.placeholder = t.checked ? 'Tidak kumpul' : ''; var mg = d.getElementById(inp.getAttribute('data-msg')); if (mg) mg.textContent = t.checked ? 'Tidak kumpul' : (inp.value === '' ? 'Belum diinput' : ''); } }
   });
   $$('[data-sc-miss]:checked').forEach(function (t) { var inp = d.getElementById(t.getAttribute('data-sc-miss')); if (inp) { inp.disabled = true; inp.placeholder = 'Tidak kumpul'; } });
+
+  // ---------------------------------------------------------------- Tab (Status Sistem): tanpa JS semua panel tampil
+  $$('[data-tabs]').forEach(function (box) {
+    var btns = $$('[role="tab"]', box);
+    function show(id, focus) {
+      btns.forEach(function (b) {
+        var on = b.getAttribute('data-tab') === id; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+        var p = d.getElementById(b.getAttribute('aria-controls')); if (p) p.hidden = !on;
+        if (on && focus) b.focus();
+      });
+    }
+    var start = (location.hash && $('[data-tab="' + location.hash.slice(1) + '"]', box)) ? location.hash.slice(1)
+      : ((btns.filter(function (b) { return b.getAttribute('aria-selected') === 'true'; })[0] || btns[0] || { getAttribute: function () { return ''; } }).getAttribute('data-tab'));
+    box.classList.add('is-js'); show(start);
+    btns.forEach(function (b, i) {
+      b.addEventListener('click', function () { show(b.getAttribute('data-tab')); });
+      b.addEventListener('keydown', function (e) {
+        var k = e.key === 'ArrowRight' ? 1 : (e.key === 'ArrowLeft' ? -1 : 0); if (!k) return;
+        e.preventDefault(); show(btns[(i + k + btns.length) % btns.length].getAttribute('data-tab'), true);
+      });
+    });
+    d.addEventListener('click', function (e) {
+      var a = e.target.closest('[data-tab-open]'); if (!a || !$('[data-tab="' + a.getAttribute('data-tab-open') + '"]', box)) return;
+      e.preventDefault(); show(a.getAttribute('data-tab-open')); box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
 
   // ---------------------------------------------------------------- Lihat/sembunyikan kata sandi (ikon mata) + salin
   var EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';

@@ -66,15 +66,19 @@ class SystemStatus extends BaseController
             ->orderBy('audit_logs.id', 'DESC')->findAll(8);
         $users = (new UserModel())->select('name, email, role, is_active, last_login_at')->orderBy('role', 'DESC')->findAll();
 
-        // ----- Ukuran data (jumlah baris saja)
-        $counts = [];
-        foreach (BackupService::TABLES as $t) {
-            try {
-                $counts[$t] = $db->table($t)->countAllResults();
-            } catch (Throwable $e) {
-                $counts[$t] = null;
+        // ----- Ukuran data (jumlah baris saja) — disimpan 5 menit agar halaman ringan
+        $counts = cache()->remember('ss_counts', 300, static function () use ($db): array {
+            $out = [];
+            foreach (BackupService::TABLES as $t) {
+                try {
+                    $out[$t] = $db->table($t)->countAllResults();
+                } catch (Throwable $e) {
+                    $out[$t] = null;
+                }
             }
-        }
+
+            return $out;
+        });
 
         return [
             'server'  => $server,
@@ -94,17 +98,21 @@ class SystemStatus extends BaseController
         ];
     }
 
+    /** Ukuran folder (dihitung ulang paling sering tiap 5 menit; menelusuri ribuan file itu lambat). */
     private static function dirSize(string $dir): int
     {
         if (! is_dir($dir)) {
             return 0;
         }
-        $size = 0;
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)) as $f) {
-            $size += $f->getSize();
-        }
 
-        return $size;
+        return (int) cache()->remember('ss_dir_' . md5($dir), 300, static function () use ($dir): int {
+            $size = 0;
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)) as $f) {
+                $size += $f->getSize();
+            }
+
+            return $size;
+        });
     }
 
     /** Berkas penanda "galat sudah ditangani": galat sebelum waktu ini tidak ditampilkan lagi. */

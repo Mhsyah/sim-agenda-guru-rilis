@@ -20,7 +20,9 @@ final class Notifications
         }
         $uid = (int) $user['id'];
         try {
-            $items = ($user['role'] ?? '') === 'admin' ? self::admin() : self::teacher($uid);            $read  = $items ? array_flip(array_column(db_connect()->table('notification_reads')->select('nkey')->where('user_id', $uid)
+            // Daftar notifikasi dihitung paling sering tiap 90 detik (dipanggil di setiap halaman); status "dibaca" selalu terbaru.
+            $build = static fn () => ($user['role'] ?? '') === 'admin' ? self::admin() : self::teacher($uid);
+            $items = ENVIRONMENT === 'testing' ? $build() : cache()->remember('notif_' . ($user['role'] ?? '') . '_' . $uid, 90, $build);            $read  = $items ? array_flip(array_column(db_connect()->table('notification_reads')->select('nkey')->where('user_id', $uid)
                 ->whereIn('nkey', array_column($items, 'key'))->get()->getResultArray(), 'nkey')) : [];
             foreach ($items as &$i) {
                 $i['read'] = isset($read[$i['key']]);

@@ -11,6 +11,16 @@ class Changelog
     /** @var list<array{version: string, date: string, notes: list<string>}> */
     public static array $releases = [
         [
+            'version' => '0.4.3',
+            'date'    => '2026-11-25',
+            'notes'   => [
+                'Popup kalender lebih ringkas: tombol Tambah diganti tautan "+ Agenda di luar jadwal" dan "+ Kegiatan lain" di bawah tabel; menu Kegiatan Luar KBM di sidebar dihapus.',
+                'Dialog konfirmasi berdesain baru; kartu Laporan dengan ikon berwarna.',
+                'Status Sistem ditata ulang: kartu ringkasan + detail teknis dalam tab.',
+                'Lebih ringan: notifikasi & statistik Status Sistem di-cache, indeks database tambahan, cache browser aset 1 tahun, JS rilis diperkecil.',
+            ],
+        ],
+        [
             'version' => '0.4.2',
             'date'    => '2026-11-25',
             'notes'   => [
