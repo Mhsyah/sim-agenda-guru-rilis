@@ -11,6 +11,14 @@ class Changelog
     /** @var list<array{version: string, date: string, notes: list<string>}> */
     public static array $releases = [
         [
+            'version' => '0.4.1',
+            'date'    => '2026-11-25',
+            'notes'   => [
+                'Perbaikan: backup sebelum migrasi/pembaruan tidak lagi gagal bila tabel dari versi baru belum dibuat, sehingga "Jalankan migrasi" bisa membuat tabel kegiatan di luar KBM.',
+                'Pesan galat backup lebih jelas; laporan pemasangan memberi tahu bila masih ada migrasi yang perlu dijalankan.',
+            ],
+        ],
+        [
             'version' => '0.4.0',
             'date'    => '2026-11-25',
             'notes'   => [

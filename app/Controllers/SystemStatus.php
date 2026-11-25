@@ -200,7 +200,9 @@ class SystemStatus extends BaseController
         try {
             $backup = (new \App\Libraries\BackupService())->store('sebelum-migrasi');
         } catch (\Throwable $e) {
-            return redirect()->to(site_url('system-status'))->with('error', 'Backup database gagal; migrasi dibatalkan.');
+            log_message('error', 'Backup sebelum migrasi gagal: ' . $e->getMessage());
+
+            return redirect()->to(site_url('system-status'))->with('error', 'Backup database gagal; migrasi dibatalkan. (' . mb_substr($e->getMessage(), 0, 160) . ')');
         }
         try {
             service('migrations', null, null, false)->setNamespace(null)->latest();

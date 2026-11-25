@@ -184,6 +184,9 @@ final class UpdateInstaller
         if (! self::$dryDb) {
             try {
                 \Config\Services::migrations(null, null, false)->setNamespace(null)->latest();
+                if ($left = \App\Controllers\SystemStatus::pendingMigrations()) {
+                    $steps[] = count($left) . ' migrasi belum terpasang otomatis — klik "Jalankan migrasi" di Status Sistem.';
+                }
                 $steps[] = 'Struktur database diperbarui (migrasi).';
             } catch (Throwable $e) {
                 self::rollback($touched, $backup);
@@ -358,6 +361,9 @@ final class UpdateInstaller
         if (! self::$dryDb) {
             try {
                 \Config\Services::migrations(null, null, false)->setNamespace(null)->latest();
+                if ($left = \App\Controllers\SystemStatus::pendingMigrations()) {
+                    $steps[] = count($left) . ' migrasi belum terpasang otomatis — klik "Jalankan migrasi" di Status Sistem.';
+                }
                 $steps[] = 'Struktur database diperbarui (migrasi).';
             } catch (Throwable $e) {
                 log_message('error', 'Migrasi pembaruan (git) gagal: ' . $e->getMessage());

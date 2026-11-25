@@ -40,10 +40,31 @@ final class BackupService
         return $dir;
     }
 
+    /**
+     * Tabel yang benar-benar ada di database. Tabel dari migrasi yang belum dijalankan
+     * (mis. tepat setelah memasang versi baru) dilewati agar backup — dan migrasi sesudahnya — tetap bisa berjalan.
+     *
+     * @return list<string>
+     */
+    public function existingTables(): array
+    {
+        $all = $this->liveTables();
+
+        return array_values(array_filter(self::TABLES, fn ($t) => in_array($this->db->prefixTable($t), $all, true)));
+    }
+
+    /** Nama tabel di database (dibaca ulang, tanpa cache; sudah termasuk awalan DBPrefix). */
+    private function liveTables(): array
+    {
+        $this->db->resetDataCache();
+
+        return $this->db->listTables();
+    }
+
     public function export(): string
     {
         $tables = [];
-        foreach (self::TABLES as $t) {
+        foreach ($this->existingTables() as $t) {
             $tables[$t] = $this->db->table($t)->orderBy('id', 'ASC')->get()->getResultArray();
         }
         $payload = json_encode($tables, JSON_UNESCAPED_UNICODE);
@@ -113,6 +134,14 @@ final class BackupService
             if (! is_array($rows)) {
                 throw new RuntimeException('Data tabel ' . $t . ' tidak valid.');
             }
+            if (! in_array($this->db->prefixTable($t), $live ??= $this->liveTables(), true)) {
+                if ($rows) {
+                    throw new RuntimeException('Tabel ' . $t . ' belum ada di database ini. Jalankan migrasi di Status Sistem terlebih dahulu.');
+                }
+                $counts[$t] = 0;
+
+                continue;
+            }
             $cols = $this->db->getFieldNames($t);
             foreach ($rows as $r) {
                 if (! is_array($r) || array_diff(array_keys($r), $cols)) {
@@ -133,11 +162,12 @@ final class BackupService
     {
         ['data' => $data, 'counts' => $counts] = $this->validate($json);
 
+        $tables = $this->existingTables();
         $this->db->transException(true)->transStart();
-        foreach (array_reverse(self::TABLES) as $t) {
+        foreach (array_reverse($tables) as $t) {
             $this->db->table($t)->emptyTable();
         }
-        foreach (self::TABLES as $t) {
+        foreach ($tables as $t) {
             $rows = $data['tables'][$t] ?? [];
             foreach (array_chunk($rows, 200) as $chunk) {
                 $this->db->table($t)->insertBatch($chunk);
@@ -155,7 +185,7 @@ final class BackupService
         if ($this->db->DBDriver !== 'Postgre') {
             return; // MySQL/MariaDB menyesuaikan AUTO_INCREMENT secara otomatis.
         }
-        foreach (self::TABLES as $t) {
+        foreach ($this->existingTables() as $t) {
             $tbl = $this->db->prefixTable($t);
             $this->db->query("SELECT setval(pg_get_serial_sequence('{$tbl}', 'id'), COALESCE((SELECT MAX(id) FROM {$tbl}), 0) + 1, false)");
         }
