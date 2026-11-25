@@ -229,11 +229,13 @@ class Dashboard extends BaseController
         $weekStart = date('Y-m-d', strtotime('monday this week'));
         $ag        = $db->prefixTable('teaching_agendas');
         $us        = $db->prefixTable('users');
+        $ka        = $db->prefixTable('teacher_activities');
         $activity  = $db->query(
             "SELECT u.id, u.name, u.last_login_at,
-                (SELECT COUNT(*) FROM {$ag} a WHERE a.user_id = u.id AND a.deleted_at IS NULL AND a.agenda_date >= ?) AS week_agendas
+                (SELECT COUNT(*) FROM {$ag} a WHERE a.user_id = u.id AND a.deleted_at IS NULL AND a.agenda_date >= ?) AS week_agendas,
+                (SELECT COUNT(*) FROM {$ka} k WHERE k.user_id = u.id AND k.activity_date >= ?) AS week_acts
              FROM {$us} u WHERE u.role = 'teacher' AND u.is_active = 1 ORDER BY week_agendas DESC, u.name ASC LIMIT 10",
-            [$weekStart]
+            [$weekStart, $weekStart]
         )->getResultArray();
 
         $semId = (int) Period::semesterId();

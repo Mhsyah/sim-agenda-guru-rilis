@@ -910,13 +910,13 @@
     var today = new Date(); today = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
     var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'], bln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     function open(date) {
-      var t = (data.days || {})[date] || { slots: [], extra: [], holiday: null }, ev = (data.events || {})[date] || [];
-      var dt = new Date(date + 'T00:00:00'), past = date < today;
+      var t = (data.days || {})[date] || { slots: [], extra: [], acts: [], holiday: null }, ev = (data.events || {})[date] || [];
+      var dt = new Date(date + 'T00:00:00'), past = date < today, acts = t.acts || [];
       var done = t.slots.filter(function (s) { return s.done; }).length, total = t.slots.length;
       $('#cal-dlg-title', dlg).textContent = 'Agenda ' + dt.getDate() + ' ' + bln[dt.getMonth()].slice(0, 3) + ' ' + dt.getFullYear() + ' · ' + hari[dt.getDay()];
       var st = $('[data-cal-state]', dlg);
       if (st) {
-        var lbl = !total ? (t.extra.length ? t.extra.length + ' agenda' : 'Tanpa jadwal') : (done >= total ? 'Lengkap ' + done + '/' + total : (past || date === today ? 'Belum lengkap ' + done + '/' + total : (done ? 'Terisi ' + done + '/' + total : total + ' jadwal')));
+        var lbl = !total ? (t.extra.length ? t.extra.length + ' agenda' : (acts.length ? acts.length + ' kegiatan' : 'Tanpa jadwal')) : (done >= total ? 'Lengkap ' + done + '/' + total : (past || date === today ? 'Belum lengkap ' + done + '/' + total : (done ? 'Terisi ' + done + '/' + total : total + ' jadwal')));
         st.textContent = lbl; st.className = 'cal-dlg-state ' + (!total ? 'is-none' : (done >= total ? 'is-ok' : (past ? 'is-miss' : 'is-plan')));
       }
       var csrfN = d.documentElement.getAttribute('data-csrf-name'), csrfH = d.documentElement.getAttribute('data-csrf-hash');
@@ -945,14 +945,30 @@
       if (ev.length) h += '<ul class="cal-dlg-ev">' + ev.map(function (e) { return '<li class="k-' + esc(e.k) + '">' + esc(e.t) + '</li>'; }).join('') + '</ul>';
       if (t.holiday) h += '<p class="alert alert-warning">Tanggal ini tercatat sebagai hari libur. Isi agenda hanya bila tetap ada kegiatan belajar.</p>';
       if (!t.slots.length && !t.extra.length) {
-        h += '<p class="cal-dlg-empty">Tidak ada jadwal mengajar pada tanggal ini. Klik <b>+ Tambah</b> untuk agenda di luar jadwal.</p>';
+        h += '<p class="cal-dlg-empty">Tidak ada jadwal mengajar pada tanggal ini. Klik <b>+ Tambah</b> untuk agenda di luar jadwal atau kegiatan lain.</p>';
       } else {
         h += '<div class="cal-table-wrap"><table class="cal-table"><thead><tr><th>Jam</th><th><span class="sr-only">Status</span></th><th>Kelas · Mapel</th><th>TP</th><th>Pokok bahasan</th><th>Info</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody>'
           + t.slots.map(function (s) { return row(s, 'slot'); }).join('') + t.extra.map(function (s) { return row(s, 'extra'); }).join('')
           + '</tbody></table></div>';
       }
+      if (acts.length) {
+        h += '<p class="cal-sec-title">Kegiatan di luar KBM</p><div class="cal-table-wrap"><table class="cal-table"><thead><tr><th>Jam</th><th><span class="sr-only">Status</span></th><th>Kegiatan</th><th>Jenis</th><th>Uraian</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody>'
+          + acts.map(function (k) {
+            return '<tr class="is-act"><td class="cal-t-time" data-label="Jam"><b>' + esc(k.time || '—') + '</b><span class="cal-kind">Kegiatan</span></td>'
+              + '<td class="cal-t-dot"><i class="cal-st is-act" title="Kegiatan di luar KBM"></i></td>'
+              + '<td data-label="Kegiatan"><b>' + esc(k.title) + '</b>' + (k.place ? '<span class="cal-mp">' + esc(k.place) + '</span>' : '') + '</td>'
+              + '<td data-label="Jenis"><span class="cal-chip is-info">' + esc(k.type) + '</span></td>'
+              + '<td data-label="Uraian">' + (k.desc ? '<span class="cal-clamp">' + esc(k.desc) + '</span>' : '<span class="text-muted">—</span>')
+              + (k.file ? ' <a class="cal-chip" href="' + esc(k.file) + '" target="_blank" rel="noopener">Lampiran</a>' : '') + '</td>'
+              + '<td class="cal-t-act"><a class="btn btn-ghost btn-sm" href="' + esc(k.url) + '" data-cal-form>Ubah</a>'
+              + '<form method="post" action="' + esc(k.del) + '" data-confirm="Hapus kegiatan ' + esc(k.title) + '?" data-confirm-label="Ya, hapus">'
+              + '<input type="hidden" name="' + esc(csrfN) + '" value="' + esc(csrfH) + '"><input type="hidden" name="from" value="calendar:' + esc(date.slice(0, 7)) + '"><button class="btn btn-danger btn-sm">Hapus</button></form></td></tr>';
+          }).join('') + '</tbody></table></div>';
+      }
       $('[data-cal-body]', dlg).innerHTML = h;
-      var other = $('[data-cal-other]', dlg); other.href = data.newUrl + '?agenda_date=' + date; other.setAttribute('data-cal-form', '');
+      var addA = $('[data-cal-add="agenda"]', dlg), addK = $('[data-cal-add="activity"]', dlg);
+      if (addA) addA.href = data.newUrl + '?agenda_date=' + date;
+      if (addK) addK.href = (data.actUrl || '') + '?activity_date=' + date;
       showList();
       if (!dlg.open) { if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); }
     }
@@ -979,7 +995,8 @@
       if (!frame) { location.href = url; return; }
       frame.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'embed=1';
       dlg.classList.add('is-form'); wrap.hidden = false; $('[data-cal-body]', dlg).hidden = true; $('[data-cal-foot]', dlg).hidden = true;
-      if (back) back.hidden = false; $('[data-cal-kicker]', dlg).textContent = 'Pengisian Agenda & Jurnal Mengajar';
+      if (back) back.hidden = false; $('[data-cal-kicker]', dlg).textContent = /\/activities\//.test(url) ? 'Kegiatan di luar KBM' : 'Pengisian Agenda & Jurnal Mengajar';
+      var menu = $('details[data-cal-other]', dlg); if (menu) menu.removeAttribute('open');
       var oth = $('[data-cal-other]', dlg), sta = $('[data-cal-state]', dlg); if (oth) oth.hidden = true; if (sta) sta.hidden = true;
     }
     dlg.addEventListener('click', function (e) {

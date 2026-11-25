@@ -81,6 +81,8 @@ class ComposerStaticInit57ce60799ba55cf6ea289cc8133371a4
 
     public static $classMap = array (
         'App\\Controllers\\AcademicYears' => __DIR__ . '/../..' . '/app/Controllers/AcademicYears.php',
+        'App\\Controllers\\Activities' => __DIR__ . '/../..' . '/app/Controllers/Activities.php',
+        'App\\Controllers\\ActivityRecap' => __DIR__ . '/../..' . '/app/Controllers/ActivityRecap.php',
         'App\\Controllers\\Agendas' => __DIR__ . '/../..' . '/app/Controllers/Agendas.php',
         'App\\Controllers\\Assessments' => __DIR__ . '/../..' . '/app/Controllers/Assessments.php',
         'App\\Controllers\\AuthController' => __DIR__ . '/../..' . '/app/Controllers/AuthController.php',
@@ -177,6 +179,7 @@ class ComposerStaticInit57ce60799ba55cf6ea289cc8133371a4
         'App\\Models\\SemesterModel' => __DIR__ . '/../..' . '/app/Models/SemesterModel.php',
         'App\\Models\\StudentModel' => __DIR__ . '/../..' . '/app/Models/StudentModel.php',
         'App\\Models\\SubjectModel' => __DIR__ . '/../..' . '/app/Models/SubjectModel.php',
+        'App\\Models\\TeacherActivityModel' => __DIR__ . '/../..' . '/app/Models/TeacherActivityModel.php',
         'App\\Models\\UserModel' => __DIR__ . '/../..' . '/app/Models/UserModel.php',
         'CodeIgniter\\API\\ApiException' => __DIR__ . '/..' . '/codeigniter4/framework/system/API/ApiException.php',
         'CodeIgniter\\API\\BaseTransformer' => __DIR__ . '/..' . '/codeigniter4/framework/system/API/BaseTransformer.php',

@@ -45,6 +45,9 @@ $agSum   = ['is-ok' => 0, 'is-part' => 0, 'is-miss' => 0, 'is-plan' => 0];
 $jpDone  = 0;
 $jpDue   = 0;
 foreach ($teach as $date => $t) {
+    if (! $t['total'] && ! $t['extra']) {
+        continue; // hanya kegiatan di luar KBM
+    }
     $agSum[$agState($date, $t)[0]]++;
     if ($date <= $today) {
         $jpDone += $t['done'];
@@ -109,9 +112,13 @@ $agInfo = [
                         <?php else: ?>
                             <span class="cal-num"><?= (int) substr($day['date'], 8) ?></span>
                         <?php endif ?>
-                        <?php if ($day['in'] && isset($teach[$day['date']])): [$agCls, $agTxt, $agTip] = $agState($day['date'], $teach[$day['date']]); ?>
+                        <?php if ($day['in'] && isset($teach[$day['date']]) && ($teach[$day['date']]['total'] || $teach[$day['date']]['extra'])): [$agCls, $agTxt, $agTip] = $agState($day['date'], $teach[$day['date']]); ?>
                             <button type="button" class="cal-ag <?= $agCls ?>" data-cal-day="<?= $day['date'] ?>" title="<?= esc($agTip, 'attr') ?>">
                                 <?= icon('pen', 'size-3') ?> <?= esc($agTxt) ?><span class="sr-only"> — <?= esc($agTip) ?></span></button>
+                        <?php endif ?>
+                        <?php if ($day['in'] && ! empty($teach[$day['date']]['acts'])): $nAct = count($teach[$day['date']]['acts']); ?>
+                            <button type="button" class="cal-act" data-cal-day="<?= $day['date'] ?>" title="<?= esc(implode(' · ', array_column($teach[$day['date']]['acts'], 'title')), 'attr') ?>">
+                                <?= icon('sparkle', 'size-3') ?> <?= $nAct ?> kegiatan<span class="sr-only"> di luar KBM</span></button>
                         <?php endif ?>
                         <div class="cal-events">
                             <?php foreach (array_slice($day['events'], 0, 3) as $e):
@@ -227,7 +234,13 @@ $agInfo = [
                 <span class="cal-dlg-state" data-cal-state></span>
             </div>
             <div class="flex items-center gap-2">
-                <a class="btn btn-primary btn-sm" data-cal-other href="#"><?= icon('plus', 'size-4') ?> Tambah</a>
+                <details class="cal-add-menu" data-cal-other data-dropdown>
+                    <summary class="btn btn-primary btn-sm"><?= icon('plus', 'size-4') ?> Tambah <?= icon('chevron-down', 'size-3.5') ?></summary>
+                    <div class="cal-add-pop">
+                        <a href="#" data-cal-form data-cal-add="agenda"><?= icon('pen', 'size-4 shrink-0') ?><span><b>Agenda mengajar</b><small>Agenda &amp; jurnal KBM, termasuk di luar jadwal (mis. jam pengganti)</small></span></a>
+                        <a href="#" data-cal-form data-cal-add="activity"><?= icon('sparkle', 'size-4 shrink-0') ?><span><b>Kegiatan lain</b><small>Di luar KBM: rapat, upacara, piket, pelatihan, kepanitiaan, …</small></span></a>
+                    </div>
+                </details>
                 <button type="button" class="btn btn-ghost btn-sm btn-icon" data-cal-close aria-label="Tutup"><?= icon('x', 'size-4') ?></button>
             </div>
         </div>
@@ -237,11 +250,11 @@ $agInfo = [
         </div>
         <div class="cal-dlg-foot" data-cal-foot>
             <ul class="cal-dlg-legend" aria-label="Keterangan">
-                <li><i class="cal-st is-done"></i> Sudah diisi</li><li><i class="cal-st is-miss"></i> Belum diisi (sudah lewat)</li><li><i class="cal-st is-plan"></i> Akan datang</li>
+                <li><i class="cal-st is-done"></i> Sudah diisi</li><li><i class="cal-st is-miss"></i> Belum diisi (sudah lewat)</li><li><i class="cal-st is-plan"></i> Akan datang</li><li><i class="cal-st is-act"></i> Kegiatan di luar KBM</li>
             </ul>
         </div>
     </dialog>
     <script type="application/json" id="cal-teach"><?= json_encode(['days' => $teach, 'events' => array_map(static fn ($d) => array_map(static fn ($e) => ['t' => $e['title'], 'k' => $e['event_type']], $d), array_map(static fn ($w) => $w, array_column(array_merge(...$weeks), 'events', 'date'))),
-        'newUrl' => site_url('agendas/new')], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
+        'newUrl' => site_url('agendas/new'), 'actUrl' => site_url('activities/new')], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 <?php endif ?>
 <?= $this->endSection() ?>

@@ -80,7 +80,7 @@ $agendaChart = '<p class="mb-3 text-sm text-muted">' . $sum . ' agenda tercatat 
                 <h2 id="act-title" class="text-[0.95rem] font-semibold tracking-tight">Aktivitas guru minggu ini</h2>
                 <p class="text-xs text-muted">Diurutkan dari agenda terbanyak</p>
             </div>
-            <a href="<?= site_url('users?role=teacher') ?>" class="text-xs font-semibold">Data guru</a>
+            <span class="flex gap-3"><a href="<?= site_url('teacher-activities') ?>" class="text-xs font-semibold">Rekap kegiatan</a><a href="<?= site_url('users?role=teacher') ?>" class="text-xs font-semibold">Data guru</a></span>
         </div>
         <?php if (! $activity): ?>
             <p class="px-6 py-10 text-center text-sm text-muted">Belum ada akun guru aktif. <a href="<?= site_url('imports#teachers') ?>">Impor data guru</a>.</p>
@@ -92,6 +92,7 @@ $agendaChart = '<p class="mb-3 text-sm text-muted">' . $sum . ' agenda tercatat 
                     . '<span class="truncate font-medium">' . esc($a['name']) . '</span></div></td>'
                     . '<td class="whitespace-nowrap text-xs text-muted">' . ($a['last_login_at'] ? fmt_date(substr($a['last_login_at'], 0, 10)) . ', ' . substr($a['last_login_at'], 11, 5) : 'Belum pernah') . '</td>'
                     . '<td class="text-right font-semibold tabular-nums">' . $n . '</td>'
+                    . '<td class="text-right tabular-nums">' . ((int) ($a['week_acts'] ?? 0) ?: '<span class="text-muted">0</span>') . '</td>'
                     . '<td class="text-right">' . ($n > 0 ? '<span class="badge badge-success badge-dot">Aktif mengisi</span>' : ($a['last_login_at'] ? '<span class="badge badge-warning badge-dot">Belum mengisi</span>' : '<span class="badge badge-danger badge-dot">Belum login</span>')) . '</td></tr>';
             };
             $top = array_slice($activity, 0, 8);
@@ -99,7 +100,7 @@ $agendaChart = '<p class="mb-3 text-sm text-muted">' . $sum . ' agenda tercatat 
             <div class="overflow-x-auto">
                 <table class="table ad-table min-w-[34rem]">
                     <caption class="sr-only">Aktivitas guru minggu ini</caption>
-                    <thead><tr><th scope="col">Guru</th><th scope="col" class="w-40">Login terakhir</th><th scope="col" class="w-20 text-right">Agenda</th><th scope="col" class="w-36 text-right">Status</th></tr></thead>
+                    <thead><tr><th scope="col">Guru</th><th scope="col" class="w-40">Login terakhir</th><th scope="col" class="w-20 text-right">Agenda</th><th scope="col" class="w-24 text-right" title="Kegiatan di luar KBM">Kegiatan</th><th scope="col" class="w-36 text-right">Status</th></tr></thead>
                     <tbody><?php foreach ($top as $a) { echo $row($a); } ?></tbody>
                     <?php if ($rest): ?><tbody class="ad-more" id="ad-more" hidden><?php foreach ($rest as $a) { echo $row($a); } ?></tbody><?php endif ?>
                 </table>

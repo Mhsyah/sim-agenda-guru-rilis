@@ -31,7 +31,7 @@ class Journal extends BaseController
         $semId    = (int) ($f['semester_id'] ?? 0) ?: (int) Period::semesterId();
         $from     = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($f['from'] ?? '')) ? $f['from'] : null;
         $to       = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($f['to'] ?? '')) ? $f['to'] : null;
-        $parts    = array_filter(explode(',', (string) ($f['parts'] ?? 'cover,schedule,agenda')));
+        $parts    = array_filter(explode(',', (string) ($f['parts'] ?? 'cover,schedule,agenda,activity')));
 
         $m = (new AgendaModel())
             ->select('teaching_agendas.*, lo.code AS tp_code')
@@ -58,6 +58,8 @@ class Journal extends BaseController
         }
 
         $semester = (new SemesterModel())->find($semId);
+        // Kegiatan di luar KBM pada semester (atau rentang tanggal) terpilih
+        $activities = $semester ? Activities::between((int) Auth::id(), $from ?? $semester['start_date'], $to ?? $semester['end_date']) : [];
         $reviews  = (new PrincipalReviewModel())->where('user_id', Auth::id())->where('academic_year_id', Period::yearId())->orderBy('review_date', 'ASC')->findAll();
 
         Audit::log('print', 'journal', null, null, ['class' => $classId, 'subject' => $subjectId, 'semester' => $semId]);
@@ -75,6 +77,7 @@ class Journal extends BaseController
             'to'        => $to,
             'parts'     => $parts,
             'agendas'   => $agendas,
+            'activities' => $activities,
             'abs'       => $abs,
             'semester'  => $semester,
             'reviews'   => $reviews,

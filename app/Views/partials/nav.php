@@ -36,6 +36,7 @@ $group = static fn (string $t) => '<p class="nav-group"><span class="nav-group-t
                 <?= $link('teacher-schedules/piket', 'Atur Guru Piket') ?>
             </div>
         </details>
+        <?= $link('teacher-activities', 'Rekap Kegiatan Guru', 'sparkle') ?>
         <?php $acadOpen = url_is('academic-years*') || url_is('semesters*') || url_is('subjects*') || url_is('calendar*'); ?>
         <details class="nav-tree" <?= $acadOpen ? 'open' : '' ?>>
             <summary class="nav-link<?= $acadOpen ? ' is-parent' : '' ?>" title="Tahun Pelajaran"><?= icon('calendar', 'size-[1.1rem] shrink-0') ?><span class="nav-label truncate">Tahun Pelajaran</span><span class="nav-caret"><?= icon('chevron-down', 'size-4') ?></span></summary>
@@ -68,6 +69,7 @@ $group = static fn (string $t) => '<p class="nav-group"><span class="nav-group-t
         <?= $group('Mengajar') ?>
         <?php $calOn = url_is('calendar*') || url_is('agendas*'); ?>
         <a class="nav-link" href="<?= site_url('calendar') ?>" title="Kalender &amp; Agenda" <?= $calOn ? 'aria-current="page"' : '' ?>><?= icon('calendar', 'size-[1.1rem] shrink-0') ?><span class="nav-label truncate">Kalender &amp; Agenda</span></a>
+        <?= $link('activities', 'Kegiatan Luar KBM', 'sparkle') ?>
         <?= $link('schedules', 'Jadwal', 'clock') ?>
         <?= $link('principal-reviews', 'Kesan Kepsek', 'sparkle') ?>
         <?= $link('students', 'Data Siswa', 'users') ?>

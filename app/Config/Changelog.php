@@ -11,6 +11,16 @@ class Changelog
     /** @var list<array{version: string, date: string, notes: list<string>}> */
     public static array $releases = [
         [
+            'version' => '0.4.0',
+            'date'    => '2026-11-25',
+            'notes'   => [
+                'Kegiatan di luar KBM: tombol "+ Tambah" di popup kalender kini berisi pilihan Agenda mengajar atau Kegiatan lain (rapat, upacara, piket, pendampingan, pelatihan, kepanitiaan, …).',
+                'Form kegiatan lengkap: jenis, nama, jam, tempat, uraian/hasil, dan lampiran bukti; tampil di popup & kotak tanggal kalender.',
+                'Buku Jurnal mencetak halaman "Kegiatan di Luar KBM"; laporan guru baru dengan ekspor CSV.',
+                'Admin: menu Rekap Kegiatan Guru (ringkasan per guru & daftar kegiatan) dan kolom Kegiatan di dashboard.',
+            ],
+        ],
+        [
             'version' => '0.3.0',
             'date'    => '2026-11-24',
             'notes'   => [

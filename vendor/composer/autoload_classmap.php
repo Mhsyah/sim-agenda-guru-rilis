@@ -7,6 +7,8 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'App\\Controllers\\AcademicYears' => $baseDir . '/app/Controllers/AcademicYears.php',
+    'App\\Controllers\\Activities' => $baseDir . '/app/Controllers/Activities.php',
+    'App\\Controllers\\ActivityRecap' => $baseDir . '/app/Controllers/ActivityRecap.php',
     'App\\Controllers\\Agendas' => $baseDir . '/app/Controllers/Agendas.php',
     'App\\Controllers\\Assessments' => $baseDir . '/app/Controllers/Assessments.php',
     'App\\Controllers\\AuthController' => $baseDir . '/app/Controllers/AuthController.php',
@@ -103,6 +105,7 @@ return array(
     'App\\Models\\SemesterModel' => $baseDir . '/app/Models/SemesterModel.php',
     'App\\Models\\StudentModel' => $baseDir . '/app/Models/StudentModel.php',
     'App\\Models\\SubjectModel' => $baseDir . '/app/Models/SubjectModel.php',
+    'App\\Models\\TeacherActivityModel' => $baseDir . '/app/Models/TeacherActivityModel.php',
     'App\\Models\\UserModel' => $baseDir . '/app/Models/UserModel.php',
     'CodeIgniter\\API\\ApiException' => $vendorDir . '/codeigniter4/framework/system/API/ApiException.php',
     'CodeIgniter\\API\\BaseTransformer' => $vendorDir . '/codeigniter4/framework/system/API/BaseTransformer.php',

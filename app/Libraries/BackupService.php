@@ -16,7 +16,7 @@ final class BackupService
         'users', 'school_profiles', 'academic_years', 'semesters', 'subjects', 'user_subjects', 'class_groups', 'user_teaching', 'students',
         'student_enrollments', 'learning_outcomes', 'learning_objectives', 'outcome_objectives', 'curriculum_documents',
         'school_calendar_events', 'teaching_schedules', 'duty_rosters', 'subject_loads', 'time_slots', 'teaching_agendas', 'attendances', 'assessment_types', 'assessments',
-        'grading_configs', 'grading_config_items', 'assessment_scores', 'principal_reviews', 'audit_logs',
+        'grading_configs', 'grading_config_items', 'assessment_scores', 'principal_reviews', 'teacher_activities', 'audit_logs',
     ];
 
     public const FORMAT = 1;

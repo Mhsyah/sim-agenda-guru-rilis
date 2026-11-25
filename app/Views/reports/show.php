@@ -19,9 +19,9 @@ $q   = http_build_query(array_filter($f, static fn ($v) => $v !== '' && is_strin
 
 <form method="get" class="filters card mb-5 flex flex-wrap items-end gap-3 p-4 sm:p-4" aria-label="Filter laporan">
     <?php foreach ($filters as $k): ?>
-        <?php if (in_array($k, ['class_group_id', 'subject_id', 'semester_id', 'assessment_id', 'event_type'], true)):
-            $opts  = ['class_group_id' => $classes, 'subject_id' => $subjects, 'semester_id' => $semesters, 'assessment_id' => $assessmentOptions ?? [], 'event_type' => event_types()][$k];
-            $label = ['class_group_id' => 'Kelas', 'subject_id' => 'Mapel', 'semester_id' => 'Semester', 'assessment_id' => 'Asesmen', 'event_type' => 'Jenis'][$k]; ?>
+        <?php if (in_array($k, ['class_group_id', 'subject_id', 'semester_id', 'assessment_id', 'event_type', 'activity_type'], true)):
+            $opts  = ['class_group_id' => $classes, 'subject_id' => $subjects, 'semester_id' => $semesters, 'assessment_id' => $assessmentOptions ?? [], 'event_type' => event_types(), 'activity_type' => \App\Controllers\Activities::types()][$k];
+            $label = ['class_group_id' => 'Kelas', 'subject_id' => 'Mapel', 'semester_id' => 'Semester', 'assessment_id' => 'Asesmen', 'event_type' => 'Jenis', 'activity_type' => 'Jenis kegiatan'][$k]; ?>
             <div class="field <?= $k === 'assessment_id' ? 'min-w-72 flex-1' : 'min-w-40' ?>">
                 <label class="label" for="rf-<?= $k ?>"><?= $label ?></label>
                 <select class="input" id="rf-<?= $k ?>" name="<?= $k ?>">

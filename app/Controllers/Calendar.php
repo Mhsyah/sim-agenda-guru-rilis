@@ -141,7 +141,7 @@ class Calendar extends CrudController
     /**
      * Guru: jadwal mengajar & agenda per tanggal pada bulan ini, untuk menulis agenda langsung dari kalender.
      *
-     * @return array<string, array{slots: list<array>, extra: list<array>, holiday: ?string, done: int, total: int}>
+     * @return array<string, array{slots: list<array>, extra: list<array>, acts: list<array>, holiday: ?string, done: int, total: int}>
      */
     private static function teachingDays(string $first, string $last, array $byDay): array
     {
@@ -164,6 +164,22 @@ class Calendar extends CrudController
             ->where('a.user_id', $uid)->where('a.deleted_at', null)->where('a.agenda_date >=', $first)->where('a.agenda_date <=', $last)
             ->orderBy('a.agenda_date', 'ASC')->get()->getResultArray() as $a) {
             $agendas[$a['agenda_date']][] = $a;
+        }
+        // Kegiatan di luar KBM (rapat, upacara, piket, …)
+        $acts  = [];
+        $types = Activities::types();
+        foreach (Activities::between($uid, $first, $last) as $k) {
+            $acts[$k['activity_date']][] = [
+                'id'    => (int) $k['id'],
+                'title' => $k['title'],
+                'type'  => $types[$k['activity_type']] ?? $k['activity_type'],
+                'time'  => Activities::timeRange($k),
+                'place' => (string) ($k['location'] ?? ''),
+                'desc'  => mb_strimwidth((string) ($k['description'] ?? ''), 0, 120, '…'),
+                'file'  => ! empty($k['material_file']) ? site_url('activities/' . $k['id'] . '/material') : '',
+                'url'   => site_url('activities/' . $k['id'] . '/edit'),
+                'del'   => site_url('activities/' . $k['id'] . '/delete'),
+            ];
         }
         $out = [];
         for ($t = strtotime($first); $t <= strtotime($last); $t += 86400) {
@@ -200,8 +216,8 @@ class Calendar extends CrudController
                         'code' => (string) ($a['subject_code'] ?? ''), 'clr' => subject_color($a['subject_code'] ?: $a['subject_name']), 'url' => site_url('agendas/' . $a['id'] . '/edit')] + self::agendaInfo($a);
                 }
             }
-            if ($slots || $extra) {
-                $out[$d] = ['slots' => $slots, 'extra' => $extra, 'holiday' => $holiday,
+            if ($slots || $extra || isset($acts[$d])) {
+                $out[$d] = ['slots' => $slots, 'extra' => $extra, 'acts' => $acts[$d] ?? [], 'holiday' => $holiday,
                     'done' => count(array_filter($slots, static fn ($s) => $s['done'])), 'total' => count($slots)];
             }
         }

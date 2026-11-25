@@ -20,6 +20,7 @@ class Reports extends BaseController
     private const TYPES = [
         'journal'    => ['Buku Jurnal Agenda Guru', 'Format buku agenda sekolah ber-kop: sampul & kesan kepala sekolah, jadwal mengajar, tabel agenda (a/s/i), tanda tangan.', 'book'],
         'agenda'     => ['Agenda/Jurnal', 'Jurnal mengajar per tanggal, kelas, mapel, dan semester.', 'pen'],
+        'activities' => ['Kegiatan di Luar KBM', 'Rapat, upacara, piket, pendampingan, pelatihan, kepanitiaan, dan kegiatan lain per semester.', 'sparkle'],
         'attendance' => ['Rekap Kehadiran', 'Jumlah hadir, sakit, izin, dan alpa per siswa dari daftar hadir agenda.', 'check'],
         'students'   => ['Daftar Siswa', 'Daftar siswa per kelas pada tahun ajaran aktif.', 'users'],
         'scores'     => ['Nilai per Asesmen', 'Daftar nilai satu asesmen, termasuk yang belum diinput.', 'chart'],
@@ -269,6 +270,34 @@ class Reports extends BaseController
             'body'    => $body,
             'empty'   => 'Semua nilai sudah lengkap.',
             'csv'     => [['Tanggal', 'Asesmen', 'Kelas', 'Mapel', 'NIS', 'Nama siswa'], $body],
+        ];
+    }
+
+    private function reportActivities(array $f): array
+    {
+        $m = (new \App\Models\TeacherActivityModel())->where('user_id', Auth::id())->where('academic_year_id', Period::yearId());
+        $sem = (int) ($f['semester_id'] ?? 0) ?: (int) Period::semesterId();
+        if ($sem) {
+            $m->where('semester_id', $sem);
+        }
+        if (! empty($f['activity_type'])) {
+            $m->where('activity_type', (string) $f['activity_type']);
+        }
+        if (! empty($f['from'])) {
+            $m->where('activity_date >=', $f['from']);
+        }
+        if (! empty($f['to'])) {
+            $m->where('activity_date <=', $f['to']);
+        }
+        $rows  = $m->orderBy('activity_date', 'ASC')->orderBy('start_time', 'ASC')->findAll();
+        $types = Activities::types();
+
+        return [
+            'filters' => ['semester_id', 'activity_type', 'from', 'to'],
+            'head'    => ['Tanggal', 'Waktu', 'Jenis', 'Kegiatan', 'Tempat', 'Uraian / hasil'],
+            'body'    => array_map(static fn ($r) => [fmt_date($r['activity_date'], false, true), Activities::timeRange($r) ?: '—', $types[$r['activity_type']] ?? $r['activity_type'], $r['title'], $r['location'] ?: '—', $r['description'] ?: '—'], $rows),
+            'csv'     => [['Tanggal', 'Mulai', 'Selesai', 'Jenis', 'Kegiatan', 'Tempat', 'Uraian', 'Lampiran'],
+                array_map(static fn ($r) => [$r['activity_date'], $r['start_time'], $r['end_time'], $types[$r['activity_type']] ?? $r['activity_type'], $r['title'], $r['location'], $r['description'], $r['material_name']], $rows)],
         ];
     }
 

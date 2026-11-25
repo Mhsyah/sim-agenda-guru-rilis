@@ -81,6 +81,7 @@ $routes->group('', ['filter' => 'auth:admin'], static function (RouteCollection 
     $crud($routes, 'users', 'Users');
     $routes->post('users/(:num)/reset-password', 'Users::resetPassword/$1');
     $routes->post('users/(:num)/status', 'Users::setStatus/$1');
+    $routes->get('teacher-activities', 'ActivityRecap::index');
     $routes->get('teacher-schedules', 'TeacherSchedules::index');
     $routes->get('promotions', 'Promotions::index');
     $routes->get('schedule-builder', static fn () => redirect()->to(site_url('schedule-builder/generate')));
@@ -158,6 +159,8 @@ $routes->group('', ['filter' => 'auth:teacher'], static function (RouteCollectio
     $routes->get('agendas/attendance', 'Agendas::attendanceFragment');
     $routes->get('agendas/(:num)/material', 'Agendas::material/$1');
     $crud($routes, 'agendas', 'Agendas');
+    $routes->get('activities/(:num)/material', 'Activities::material/$1');
+    $crud($routes, 'activities', 'Activities');
 
     $routes->get('assessments/(:num)/scores', 'Assessments::scores/$1');
     $routes->post('assessments/(:num)/scores', 'Assessments::saveScores/$1');

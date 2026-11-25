@@ -65,7 +65,7 @@ $has = static fn ($p) => in_array($p, $parts, true);
     <div class="field min-w-36"><label class="label" for="j-to">Sampai tanggal</label><input class="input" type="date" id="j-to" name="to" value="<?= esc((string) $to, 'attr') ?>"></div>
     <div class="field min-w-48"><label class="label" for="j-parts">Bagian dicetak</label>
         <select class="input" id="j-parts" name="parts">
-            <?php foreach (['cover,schedule,agenda' => 'Lengkap (sampul, jadwal, agenda)', 'agenda' => 'Tabel agenda saja', 'cover' => 'Sampul & kesan kepala sekolah', 'schedule' => 'Jadwal mengajar'] as $v => $l): ?>
+            <?php foreach (['cover,schedule,agenda,activity' => 'Lengkap (sampul, jadwal, agenda, kegiatan)', 'agenda' => 'Tabel agenda saja', 'activity' => 'Kegiatan di luar KBM saja', 'cover' => 'Sampul & kesan kepala sekolah', 'schedule' => 'Jadwal mengajar'] as $v => $l): ?>
                 <option value="<?= $v ?>" <?= implode(',', $parts) === $v ? 'selected' : '' ?>><?= $l ?></option>
             <?php endforeach ?>
         </select></div>
@@ -172,6 +172,54 @@ $has = static fn ($p) => in_array($p, $parts, true);
             <?php endforeach ?>
             <?php for ($i = count($agendas); $i < 10; $i++): ?>
                 <tr style="height:1.8rem"><?php for ($c = 0; $c < 11; $c++): ?><td></td><?php endfor ?></tr>
+            <?php endfor ?>
+            </tbody>
+        </table>
+    </div>
+    <?php $sign() ?>
+</section>
+<?php endif ?>
+
+<?php if ($has('activity')): ?>
+<section class="paper sheet print-landscape" aria-label="Kegiatan di luar KBM">
+    <?= view('partials/kop', ['profile' => $profile]) ?>
+    <h2 class="sheet-title">KEGIATAN DI LUAR KEGIATAN BELAJAR MENGAJAR</h2>
+    <div class="meta-grid">
+        <span>Nama Guru</span><span>: <?= esc($authUser['name'] ?? '') ?></span>
+        <span>NIP</span><span>: <?= esc($authUser['nip'] ?? '') ?></span>
+        <span>Semester</span><span>: <?= esc($semName) ?></span>
+        <span>T.P</span><span>: <?= esc($tp) ?></span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <caption>Kegiatan guru di luar KBM</caption>
+            <thead>
+            <tr>
+                <th scope="col" style="width:2.5rem">No.</th>
+                <th scope="col">Hari/Tgl</th>
+                <th scope="col">Waktu</th>
+                <th scope="col">Jenis Kegiatan</th>
+                <th scope="col">Nama Kegiatan</th>
+                <th scope="col">Tempat</th>
+                <th scope="col">Uraian / Hasil</th>
+                <th scope="col">Bukti</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($activities as $i => $k): ?>
+                <tr>
+                    <td class="text-center"><?= $i + 1 ?>.</td>
+                    <td class="whitespace-nowrap"><?= fmt_date($k['activity_date'], false, true) ?></td>
+                    <td class="whitespace-nowrap"><?= esc(\App\Controllers\Activities::timeRange($k)) ?></td>
+                    <td><?= esc(\App\Controllers\Activities::types()[$k['activity_type']] ?? $k['activity_type']) ?></td>
+                    <td><?= esc($k['title']) ?></td>
+                    <td><?= esc((string) ($k['location'] ?? '')) ?></td>
+                    <td class="cell-long"><?= nl2br(esc((string) ($k['description'] ?? ''))) ?></td>
+                    <td class="text-center"><?= ! empty($k['material_file']) ? 'Ada' : '' ?></td>
+                </tr>
+            <?php endforeach ?>
+            <?php for ($i = count($activities); $i < 8; $i++): ?>
+                <tr style="height:1.8rem"><?php for ($c = 0; $c < 8; $c++): ?><td></td><?php endfor ?></tr>
             <?php endfor ?>
             </tbody>
         </table>
